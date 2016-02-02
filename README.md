@@ -8,20 +8,19 @@ make caching, dependency resolving tasks
 
 # ...What?
 
-No time to explain..
-
-TODO: Make readme better.
-
 `righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
 
-```
+```javascript
 righto(task, [argument or righto task])
 ```
+
+**`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
 ## examples:
 
 sync dependencies passed to bar (Not very useful):
-```
+
+```javascript
 function bar(a, callback){
     callback(null, 'hello ' + a);
 }
@@ -34,7 +33,8 @@ getBar(function(error, result){
 ```
 
 async dependencies passed to bar:
-```
+
+```javascript
 function foo(callback){
     setTimeout(function(){
 
@@ -61,7 +61,7 @@ getBar(function(error, result){
 
 The results of all `righto`'d tasks are concatenated before being passed to a dependant task, eg:
 
-```
+```javascript
 function foo(callback){
     setTimeout(function(){
 
@@ -86,7 +86,7 @@ getBar(function(error, result){
 
 You can pick and choose what results are used from a dependancy like so:
 
-```
+```javascript
 function foo(callback){
     setTimeout(function(){
 
