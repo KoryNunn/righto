@@ -14,5 +14,13 @@
     "foreign": "^1.0.3"
   },
   "devDependencies": {},
-  "description": ""
+  "description": "Wana do some async stuff? Righto..",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KoryNunn/righto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KoryNunn/righto/issues"
+  },
+  "homepage": "https://github.com/KoryNunn/righto#readme"
 }
