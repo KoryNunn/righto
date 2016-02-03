@@ -36,22 +36,62 @@ function asyncify(fn){
 //     console.log(error, result);
 // });
 
-function bar(callback){
+// function bar(callback){
+//     asyncify(function(){
+//         callback(null, 2, 3);
+//     });
+// }
+
+// function foo(callback){
+//     asyncify(function(){
+//         callback(null, 'hello');
+//     });
+// }
+
+// var getBar = righto(bar);
+
+// var getFoo = righto(foo, [getBar]);
+
+// getFoo(function(){
+//     console.log(arguments);
+// });
+
+var a = righto(function(callback){
     asyncify(function(){
-        callback(null, 2, 3);
+        callback(new Error('BEWM'));
+        // callback(null, 'a');
     });
-}
+});
 
-function foo(callback){
+var b = righto(function(callback){
     asyncify(function(){
-        callback(null, 'hello');
+        callback(null, 'b');
     });
-}
+});
 
-var getBar = righto(bar);
+var c = righto(function(callback){
+    asyncify(function(){
+        callback(null, 'c');
+    });
+});
 
-var getFoo = righto(foo, [getBar]);
 
-getFoo(function(){
-    console.log(arguments);
+
+var all = righto.all([a, b, c]);
+
+all(function(error, results){
+    console.log(error, results);
+});
+
+
+
+
+var getAll = righto.sync(function(){
+    return [a, b, c];
+});
+
+var all2 = righto.all(getAll);
+
+all2(function(error, results){
+    console.log(error, results);
 });

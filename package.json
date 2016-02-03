@@ -6,14 +6,18 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watchtest": "watchify -d test/index.js -o test/index.browser.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cpsenize": "^1.0.0",
     "foreign": "^1.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "watchify": "^3.7.0"
+  },
   "description": "Wana do some async stuff? Righto..",
   "repository": {
     "type": "git",
