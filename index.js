@@ -5,8 +5,12 @@ function isRighto(x){
     return typeof x === 'function' && x.get === x;
 }
 
+function slice(list, start, end){
+    return Array.prototype.slice.call(list, start, end);
+}
+
 function righto(fn){
-    var args = Array.prototype.slice.call(arguments, 1),
+    var args = slice(arguments, 1),
         context = this,
         started = 0,
         callbacks = [],
@@ -27,13 +31,13 @@ function righto(fn){
         foreign.parallel(function(task, done){
             if(isRighto(task)){
                 return task(function(error){
-                    done(error, Array.prototype.slice.call(arguments, 1));
+                    done(error, slice(arguments, 1));
                 });
             }
 
             if(Array.isArray(task) && isRighto(task[0])  && !isRighto(task[1])){
                 return task[0](function(error){
-                    var args = Array.prototype.slice.call(arguments, 1);
+                    var args = slice(arguments, 1);
                     done(error, task.slice(1).map(function(key){
                         return args[key];
                     }));
@@ -67,13 +71,16 @@ function righto(fn){
 }
 
 righto.sync = function(fn){
-    return righto.apply(null, [cpsenize(fn)].concat(Array.prototype.slice.call(arguments, 1)));
+    return righto.apply(null, [cpsenize(fn)].concat(slice(arguments, 1)));
 };
 
 righto.all = function(task){
+    if(arguments.length > 1){
+        task = slice(arguments);
+    }
     function resolve(tasks){
         return righto.apply(null, [function(){
-            arguments[arguments.length - 1](null, Array.prototype.slice.call(arguments, 0, -1));
+            arguments[arguments.length - 1](null, slice(arguments, 0, -1));
         }].concat(tasks));
     }
 

@@ -7,7 +7,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watchtest": "watchify -d test/index.js -o test/index.browser.js"
+    "watchtest": "watchify -d test/index.js -o test/index.browser.js",
+    "watchexample": "watchify -d example/index.js -o example/index.browser.js"
   },
   "author": "",
   "license": "ISC",
