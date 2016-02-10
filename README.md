@@ -59,7 +59,7 @@ getBar(function(error, result){
 
 ## Multiple results
 
-The results of all `righto`'d tasks are concatenated before being passed to a dependant task, eg:
+By default, dependant tasks are passed only the first result of a dependency `righto`. eg:
 
 ```javascript
 function foo(callback){
@@ -72,19 +72,19 @@ function foo(callback){
 
 var getFoo = righto(foo);
 
-function bar(a, b, c callback){
-    callback(null, [a, b, c].join(' '));
+function bar(a, callback){
+    callback(null, a);
 }
 
 var getBar = righto(bar, getFoo);
 
 getBar(function(error, result){
     // ...1 second later...
-    result -> 'first second third';
+    result -> 'first';
 });
 ```
 
-You can pick and choose what results are used from a dependancy like so:
+But you can pick and choose what results are used from a dependancy like so:
 
 ```javascript
 function foo(callback){
@@ -101,10 +101,39 @@ function bar(a, b callback){
     callback(null, [a, b].join(' '));
 }
 
-var getBar = righto(bar, [getFoo, 0, 2]); // Only take result 0, and result 2
+var getBar = righto(bar, [getFoo, 0, 2]); // Take result 0, and result 2, from getFoo
 
 getBar(function(error, result){
     // ...1 second later...
     result -> 'first third';
 });
+```
+
+## Subkeys
+
+You can create a new `righto` that resolves the key on a result like so:
+
+```
+var user = righto(getUser);
+
+var userName = user.get('name');
+
+userName(function(error, name){
+    // error or userName.
+});
+
+```
+
+And keys can be `righto`'s as well:
+
+```
+var user = righto(getUser);
+var userKey = righto(getKey);
+
+var userName = user.get(userKey);
+
+userName(function(error, something){
+    // error or something.
+});
+
 ```

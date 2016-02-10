@@ -17,6 +17,7 @@
     "foreign": "^1.0.3"
   },
   "devDependencies": {
+    "tape": "^4.4.0",
     "watchify": "^3.7.0"
   },
   "description": "Wana do some async stuff? Righto..",
