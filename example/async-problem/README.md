@@ -1,6 +1,8 @@
 An implemention of https://github.com/plaid/async-problem
 
-To run:
+To run: (from ./example/async)
+
 ```
+npm link ../../
 node index.js ./input
 ```

@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cpsenize": "^1.0.0",
+    "cpsenize": "^2.0.0",
     "foreign": "^1.0.3"
   },
   "devDependencies": {
