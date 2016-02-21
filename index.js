@@ -25,7 +25,7 @@ function resolveDependency(task, done){
         });
     }
 
-    return done(null, task);
+    return done(null, [task]);
 }
 
 function get(key){

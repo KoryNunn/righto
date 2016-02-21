@@ -172,6 +172,17 @@ test('multiple deps, default result', function(t){
     });
 });
 
+test('array dep result', function(t){
+    t.plan(2);
+
+    righto(function(first, second, third, callback){
+        t.equal(arguments.length, 4);
+        t.equal(typeof callback, 'function');
+    }, 1, true, ['a', 'b'])(function(){
+
+    });
+})
+
 var a = righto(function(callback){
         asyncify(function(){
             callback(null, 'a');
