@@ -225,7 +225,7 @@ test('righto.all righto deps', function(t){
     });
 });
 
-test('righto().get()', function(t){
+test('righto().get(key)', function(t){
     t.plan(4);
 
     var getKey = righto(function(callback){
@@ -252,4 +252,37 @@ test('righto().get()', function(t){
         t.notOk(error, 'no error');
         t.equal(result, 'BEN BOB', 'Got correct result');
     });
+});
+
+test('righto().get(fn)', function(t){
+    t.plan(3);
+
+    var getUser = righto(function(callback){
+            asyncify(function(){
+                t.pass('user gotten');
+                callback(null, {name: 'bob', child:{ name: 'ben'}});
+            });
+        });
+
+    var doThingWithName = righto(function(name, callback){
+            asyncify(function(){
+                callback(null, name.toUpperCase());
+            });
+        }, getUser.get(x => x.child.name));
+
+    doThingWithName(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 'BEN', 'Got correct result');
+    });
+});
+
+test('righto.from(value)', function(t){
+    t.plan(2);
+
+    var resolveValue = righto.from(10);
+
+    resolveValue(function(error, result){
+        t.notOk(error);
+        t.equal(result, 10);
+    })
 });

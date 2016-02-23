@@ -111,12 +111,14 @@ getBar(function(error, result){
 
 ## Subkeys
 
-You can create a new `righto` that resolves the key on a result like so:
+You can create a new `righto` that resolves the key/runs a function on a result like so:
 
 ```
 var user = righto(getUser);
 
 var userName = user.get('name');
+// OR: Use a function
+var userName = user.get(user => user.name);
 
 userName(function(error, name){
     // error or userName.
@@ -136,4 +138,17 @@ userName(function(error, something){
     // error or something.
 });
 
+```
+
+## Possible rightos: righto.from(anything)
+
+Any value can be turned into a righto using righto.from();
+
+```
+var num = righto.from(1); // -> righto:number;
+var string = righto.from('hello'); // -> righto:string;
+var nothing = righto.from(null); // -> righto:null;
+var anyValue = righto.from(anything); // -> righto:anything;
+
+var self = righto.from(someRighto); // -> someRighto;
 ```

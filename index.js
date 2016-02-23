@@ -28,18 +28,26 @@ function resolveDependency(task, done){
     return done(null, [task]);
 }
 
-function get(key){
-    return righto(function(result, key, done){
-        done(null, result[key]);
-    }, this, key);
+function get(fn){
+    return righto(function(result, fn, done){
+        if(typeof fn === 'string'){
+            return done(null, result[fn]);
+        }
+        done(null, fn(result));
+    }, this, fn);
 }
 
 function righto(fn){
-    var args = slice(arguments, 1),
+    var args = slice(arguments),
+        fn = args.shift(),
         context = this,
         started = 0,
         callbacks = [],
         results;
+
+    if(typeof fn !== 'function'){
+        throw 'No task function passed to righto';
+    }
 
     function resolve(callback){
         if(results){
@@ -102,6 +110,16 @@ righto.all = function(task){
     }
 
     return resolve(task);
+};
+
+righto.from = function(value){
+    if(isRighto(value)){
+        return value;
+    }
+
+    return righto.sync(function(resolved){
+        return resolved;
+    }, value);
 };
 
 module.exports = righto;

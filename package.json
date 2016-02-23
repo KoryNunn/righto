@@ -8,7 +8,8 @@
   "scripts": {
     "test": "node test",
     "watchtest": "watchify -d test/index.js -o test/index.browser.js",
-    "watchexample": "watchify -d example/index.js -o example/index.browser.js"
+    "watchexample": "watchify -d example/index.js -o example/index.browser.js",
+    "postinstall": "linklocal link"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +18,7 @@
     "foreign": "^1.0.3"
   },
   "devDependencies": {
+    "linklocal": "^2.5.2",
     "tape": "^4.4.0",
     "watchify": "^3.7.0"
   },
