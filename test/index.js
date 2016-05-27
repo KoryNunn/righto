@@ -2,7 +2,7 @@ var test = require('tape'),
     righto = require('../');
 
 function asyncify(fn){
-    setTimeout(fn, Math.random() * 100);
+    setTimeout(fn, Math.random() * 10);
 }
 
 test('dependencies', function(t){
@@ -285,4 +285,102 @@ test('righto.from(value)', function(t){
         t.notOk(error);
         t.equal(result, 10);
     })
+});
+
+test('no callback', function(t){
+    t.plan(1);
+
+    var didThing,
+        doThing = righto(function(done){
+            didThing = true;
+            done();
+        });
+
+    doThing();
+
+    t.equal(didThing, true, 'Task ran correctly');
+});
+
+test('non-function callback', function(t){
+    t.plan(1);
+
+    var didThing,
+        doThing = righto(function(done){
+            didThing = true;
+            done();
+        });
+
+    t.throws(function(){
+        doThing(null);
+    }, 'Providing a non-function callback throws.');
+});
+
+test('mate', function(t){
+    t.plan(3);
+
+    function getStuff(callback){
+        asyncify(function(){
+            callback(null, 3);
+        });
+    }
+
+    var stuff = righto(getStuff);
+
+    function getOtherStuff(callback){
+        asyncify(function(){
+            callback(null, 7);
+        });
+    }
+
+    var otherStuff = righto(getOtherStuff);
+
+    var stuffAndOtherStuff = righto.mate(stuff, otherStuff);
+
+    stuffAndOtherStuff(function(error, stuff, otherStuff){
+        t.notOk(error);
+        t.equal(stuff, 3);
+        t.equal(otherStuff, 7);
+    });
+});
+
+test('mate ignored', function(t){
+    t.plan(3);
+
+    function getStuff(callback){
+        asyncify(function(){
+            callback(null, 3);
+        });
+    }
+
+    var stuff = righto(getStuff);
+
+    function getOtherStuff(callback){
+        asyncify(function(){
+            callback(null, 7);
+        });
+    }
+
+    var otherStuff = righto(getOtherStuff);
+
+    var stuffAfterOtherStuff = righto.mate(stuff, [otherStuff]);
+
+    stuffAfterOtherStuff(function(error, stuff, shouldBeUndefined){
+        t.notOk(error);
+        t.equal(stuff, 3);
+        t.equal(shouldBeUndefined, undefined);
+    });
+});
+
+test('errors don\'t get gobbled', function(t){
+    t.plan(1);
+
+    function getStuff(callback){
+        throw "BOOM";
+    }
+
+    var stuff = righto(getStuff);
+
+    t.throws(function(){
+        stuff();
+    });
 });

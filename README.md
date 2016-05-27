@@ -6,8 +6,6 @@ Wana do some async stuff? Righto..
 
 make caching, dependency resolving tasks
 
-# ...What?
-
 `righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
 
 ```javascript
@@ -16,31 +14,57 @@ righto(task, [argument or righto task])
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
-## examples:
-
-sync dependencies passed to bar (Not very useful):
-
-```javascript
-function bar(a, callback){
-    callback(null, 'hello ' + a);
-}
-
-var getBar = righto(bar, 'world');
-
-getBar(function(error, result){
-    result -> 'hello world';
-});
-```
+## example:
 
 async dependencies passed to bar:
 
 ```javascript
+
+// Just your average callback-passing-style function.
 function foo(callback){
+
     setTimeout(function(){
 
         callback(null, 'world');
 
     }, 1000);
+
+}
+
+// A righto callback-passing-style function
+var getFoo = righto(foo);
+
+// Another normal callback-passing-style function.
+function bar(a, callback){
+    callback(null, 'hello ' + a);
+}
+
+// Another righto
+var getBar = righto(bar, getFoo);
+
+getBar(function(error, result){
+
+    // ...about 1 second later...
+    result -> 'hello world';
+
+});
+```
+
+## Errors
+
+Errors bubble up through tasks, so if a dependancy errors, the task errors.
+
+```javascript
+
+// Task that errors
+function foo(callback){
+
+    setTimeout(function(){
+
+        callback(new Error('IT BORKED!'));
+
+    }, 1000);
+
 }
 
 var getFoo = righto(foo);
@@ -52,8 +76,10 @@ function bar(a, callback){
 var getBar = righto(bar, getFoo);
 
 getBar(function(error, result){
-    // ...1 second later...
-    result -> 'hello world';
+
+    // ...about 1 second later...
+    error -> IT BORKED!;
+
 });
 ```
 
@@ -151,4 +177,36 @@ var nothing = righto.from(null); // -> righto:null;
 var anyValue = righto.from(anything); // -> righto:anything;
 
 var self = righto.from(someRighto); // -> someRighto;
+```
+
+## Group
+
+Occasionally you might want to mate a number of tasks into one task.
+
+For this, you can use righto.mate.
+
+```javascript
+function getStuff(callback){
+
+    // eventually...
+    callback(null, 3);
+}
+
+var stuff = righto(getStuff);
+
+function getOtherStuff(callback){
+
+    // eventually...
+    callback(null, 7);
+}
+
+var otherStuff = righto(getOtherStuff);
+
+var stuffAndOtherStuff = righto.mate(stuff, otherStuff);
+
+stuffAndOtherStuff(function(error, stuff, otherStuff){
+    error -> null
+    stuff -> 3
+    otherStuff -> 7
+});
 ```

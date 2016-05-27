@@ -16,7 +16,7 @@ function resolveDependency(task, done){
         });
     }
 
-    if(Array.isArray(task) && isRighto(task[0])  && !isRighto(task[1])){
+    if(Array.isArray(task) && isRighto(task[0]) && !isRighto(task[1])){
         return task[0](function(error){
             var args = slice(arguments, 1);
             done(error, task.slice(1).map(function(key){
@@ -37,6 +37,8 @@ function get(fn){
     }, this, fn);
 }
 
+var noOp = function(){};
+
 function righto(fn){
     var args = slice(arguments),
         fn = args.shift(),
@@ -50,6 +52,16 @@ function righto(fn){
     }
 
     function resolve(callback){
+
+        // No callback? Just run the task.
+        if(!arguments.length){
+            callback = noOp;
+        }
+
+        if(typeof callback !== 'function'){
+            throw "Callback must be a function";
+        }
+
         if(results){
             return callback.apply(context, results);
         }
@@ -120,6 +132,12 @@ righto.from = function(value){
     return righto.sync(function(resolved){
         return resolved;
     }, value);
+};
+
+righto.mate = function(){
+    return righto.apply(null, [function(){
+        arguments[arguments.length -1].apply(null, [null].concat(slice(arguments, 0, -1)));
+    }].concat(slice(arguments)));
 };
 
 module.exports = righto;
