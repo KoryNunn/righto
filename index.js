@@ -12,7 +12,13 @@ function slice(list, start, end){
 function resolveDependency(task, done){
     if(isRighto(task)){
         return task(function(error){
-            done(error, slice(arguments, 1, 2));
+            var results = slice(arguments, 1, 2);
+
+            if(!results.length){
+                results.push(undefined);
+            }
+
+            done(error, results);
         });
     }
 

@@ -384,3 +384,20 @@ test('errors don\'t get gobbled', function(t){
         stuff();
     });
 });
+
+test('0 results resolve 1 argument as a dep', function(t){
+    t.plan(2);
+
+    function getStuff(callback){
+        callback();
+    }
+
+    var stuff = righto(getStuff);
+
+    var things = righto(function(nothing, callback){
+        t.equal(nothing, undefined);
+        t.ok(typeof callback === 'function');
+    }, stuff);
+
+    things(function(){});
+});
