@@ -416,6 +416,12 @@ test('proxy support', function(t){
     });
 });
 
+test('proxy support all', function(t){
+    t.plan(1);
+
+    t.equal(righto.proxy.all, righto.all);
+});
+
 test('resolve', function(t){
     t.plan(1);
 

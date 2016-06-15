@@ -169,6 +169,9 @@ righto.proxy = function(){
 
     return proxy(righto.apply(this, arguments));
 };
+for(var key in righto){
+    righto.proxy[key] = righto[key];
+}
 
 righto.resolve = function(object, deep){
     if(isRighto(object)){
