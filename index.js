@@ -2,7 +2,7 @@ var foreign = require('foreign'),
     cpsenize = require('cpsenize');
 
 function isRighto(x){
-    return typeof x === 'function' && x.resolve === x;
+    return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
 }
 
 function slice(list, start, end){
@@ -44,6 +44,22 @@ function get(fn){
 }
 
 var noOp = function(){};
+
+function proxy(instance){
+    instance._ = new Proxy(instance, {
+        get: function(target, key){
+            if(key === '__resolve__'){
+                return instance._;
+            }
+
+            return proxy(righto.sync(function(result){
+                return result[key];
+            }, instance));
+        }
+    });
+    instance.__resolve__ = instance._;
+    return instance._;
+}
 
 function righto(fn){
     var args = slice(arguments),
@@ -144,6 +160,14 @@ righto.mate = function(){
     return righto.apply(null, [function(){
         arguments[arguments.length -1].apply(null, [null].concat(slice(arguments, 0, -1)));
     }].concat(slice(arguments)));
+};
+
+righto.proxy = function(){
+    if(typeof Proxy === 'undefined'){
+        throw 'This environment does not support Proxy\'s';
+    }
+
+    return proxy(righto.apply(this, arguments));
 };
 
 module.exports = righto;

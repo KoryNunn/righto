@@ -401,3 +401,17 @@ test('0 results resolve 1 argument as a dep', function(t){
 
     things(function(){});
 });
+
+test('proxy support', function(t){
+    t.plan(1);
+
+    function getStuff(callback){
+        callback(null, {foo: {bar: 'bar'}});
+    }
+
+    var stuff = righto.proxy(getStuff);
+
+    stuff.foo.bar(function(error, bar){
+        t.equal(bar, 'bar');
+    });
+});
