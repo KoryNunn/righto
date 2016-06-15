@@ -162,17 +162,6 @@ righto.mate = function(){
     }].concat(slice(arguments)));
 };
 
-righto.proxy = function(){
-    if(typeof Proxy === 'undefined'){
-        throw 'This environment does not support Proxy\'s';
-    }
-
-    return proxy(righto.apply(this, arguments));
-};
-for(var key in righto){
-    righto.proxy[key] = righto[key];
-}
-
 righto.resolve = function(object, deep){
     if(isRighto(object)){
         return righto.sync(function(object){
@@ -203,5 +192,16 @@ righto.resolve = function(object, deep){
         }, {});
     }, pairs);
 };
+
+righto.proxy = function(){
+    if(typeof Proxy === 'undefined'){
+        throw 'This environment does not support Proxy\'s';
+    }
+
+    return proxy(righto.apply(this, arguments));
+};
+for(var key in righto){
+    righto.proxy[key] = righto[key];
+}
 
 module.exports = righto;
