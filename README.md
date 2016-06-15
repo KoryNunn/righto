@@ -210,3 +210,44 @@ stuffAndOtherStuff(function(error, stuff, otherStuff){
     otherStuff -> 7
 });
 ```
+
+## Proxy support
+
+If you are using righto in an environment that supports proxies, you can use the proxy API:
+
+```
+var righto = require('righto').proxy;
+
+var foo = righto(function(done){
+    setTimeout(function(){
+        done(null, {foo: 'bar'});
+    });
+});
+
+foo.bar(function(error, bar){
+    bar === 'bar'
+});
+```
+
+The proxied api always returns the proxied version, meaning you can dot-access arbitrarily:
+
+
+```
+var righto = require('righto').proxy;
+
+var foo = righto(function(done){
+    setTimeout(function(){
+        done(null, {
+            foo: {
+                bar: {
+                    baz: 'hello'
+                }
+            }
+        });
+    });
+});
+
+foo.bar.baz(function(error, baz){
+    baz === 'hello'
+});
+```
