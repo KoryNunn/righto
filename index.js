@@ -170,4 +170,35 @@ righto.proxy = function(){
     return proxy(righto.apply(this, arguments));
 };
 
+righto.resolve = function(object, deep){
+    if(isRighto(object)){
+        return righto.sync(function(object){
+            return righto.resolve(object, deep);
+        }, object)
+    }
+
+    if(!(typeof object === 'object' || typeof object === 'function')){
+        return righto.from(object);
+    }
+
+    var pairs = righto.all(Object.keys(object).map(function(key){
+        return righto(function(value, done){
+            if(deep){
+                righto.sync(function(value){
+                    return [key, value];
+                }, righto.resolve(value, true))(done);
+                return;
+            }
+            done(null, [key, value]);
+        }, object[key]);
+    }));
+
+    return righto.sync(function(pairs){
+        return pairs.reduce(function(result, pair){
+            result[pair[0]] = pair[1];
+            return result;
+        }, {});
+    }, pairs);
+};
+
 module.exports = righto;
