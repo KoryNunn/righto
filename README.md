@@ -179,7 +179,27 @@ var anyValue = righto.from(anything); // -> righto:anything;
 var self = righto.from(someRighto); // -> someRighto;
 ```
 
-## Group
+## Resolve
+
+Resolves an object to a new object where any righto values are resolved:
+
+```javascript
+var foo = righto(function(callback){
+    asyncify(function(){
+        callback(null, 'foo');
+    });
+});
+
+//                            recursively resolve child objects
+//                                            V
+var bar = righto.resolve({foo: {bar: foo}}, true);
+
+bar(function(error, bar){
+    bar; // -> {foo: {bar: 'foo'}}
+});
+```
+
+## Mate
 
 Occasionally you might want to mate a number of tasks into one task.
 
@@ -215,7 +235,7 @@ stuffAndOtherStuff(function(error, stuff, otherStuff){
 
 If you are using righto in an environment that supports proxies, you can use the proxy API:
 
-```
+```javascript
 var righto = require('righto').proxy;
 
 var foo = righto(function(done){
@@ -232,7 +252,7 @@ foo.bar(function(error, bar){
 The proxied api always returns the proxied version, meaning you can dot-access arbitrarily:
 
 
-```
+```javascript
 var righto = require('righto').proxy;
 
 var foo = righto(function(done){

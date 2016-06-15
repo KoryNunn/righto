@@ -415,3 +415,35 @@ test('proxy support', function(t){
         t.equal(bar, 'bar');
     });
 });
+
+test('resolve', function(t){
+    t.plan(1);
+
+    var foo = righto(function(callback){
+        asyncify(function(){
+            callback(null, 'foo');
+        });
+    });
+
+    var bar = righto.resolve({foo: foo});
+
+    bar(function(error, bar){
+        t.deepEqual(bar, {foo: 'foo'});
+    });
+});
+
+test('resolve deep', function(t){
+    t.plan(1);
+
+    var foo = righto(function(callback){
+        asyncify(function(){
+            callback(null, 'foo');
+        });
+    });
+
+    var bar = righto.resolve({foo: {bar: foo}}, true);
+
+    bar(function(error, bar){
+        t.deepEqual(bar, {foo: {bar: 'foo'}});
+    });
+});
