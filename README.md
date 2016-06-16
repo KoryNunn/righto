@@ -56,7 +56,7 @@ getBar(function(error, result){
 
 righto suports passing error-first CPS functions by default as tasks:
 
-```
+```javascript
 function foo(callback){
     setTimeout(function(){
         callback(null, 'foo');
@@ -205,7 +205,7 @@ getBar(function(error, result){
 
 You can create a new `righto` that resolves the key/runs a function on a result like so:
 
-```
+```javascript
 var user = righto(getUser);
 
 var userName = user.get('name');
@@ -220,7 +220,7 @@ userName(function(error, name){
 
 And keys can be `righto`'s as well:
 
-```
+```javascript
 var user = righto(getUser);
 var userKey = righto(getKey);
 
@@ -236,7 +236,7 @@ userName(function(error, something){
 
 Any value can be turned into a righto using righto.from();
 
-```
+```javascript
 var num = righto.from(1); // -> righto:number;
 var string = righto.from('hello'); // -> righto:string;
 var nothing = righto.from(null); // -> righto:null;
