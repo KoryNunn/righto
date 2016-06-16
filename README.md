@@ -50,6 +50,72 @@ getBar(function(error, result){
 });
 ```
 
+## API support
+
+### Callbacks
+
+righto suports passing error-first CPS functions by default as tasks:
+
+```
+function foo(callback){
+    setTimeout(function(){
+        callback(null, 'foo');
+    });
+}
+
+var eventuallyFoo = righto(getFoo);
+
+eventuallyFoo(function(error, foo){
+    foo === 'foo';
+});
+```
+
+### Promise
+
+righto supports passing Promises as a dependency:
+
+```javascript
+var somePromise = new Promise(function(resolve, reject){
+    setTimeout(function(){
+        resolve('foo');
+    });
+});
+
+var someRighto = righto(function(somePromiseResult, done){
+    done(null, somePromiseResult);
+}, somePromise);
+
+bar(function(error, bar){
+    bar === 'foo';
+});
+```
+
+### Generators (yield)
+
+righto supports passing a generator as a task:
+
+```javascript
+var generated = righto(function*(){
+    var x = yield righto(function(done){
+        setTimeout(function(){
+            done(null, 'x');
+        });
+    });
+
+    var y = yield righto(function(done){
+        setTimeout(function(){
+            done(null, 'y');
+        });
+    });
+
+    return x + y;
+});
+
+generated(function(error, result){
+    result === 'xy';
+});
+```
+
 ## Errors
 
 Errors bubble up through tasks, so if a dependancy errors, the task errors.
