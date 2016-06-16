@@ -50,6 +50,72 @@ getBar(function(error, result){
 });
 ```
 
+## API support
+
+### Callbacks
+
+righto suports passing error-first CPS functions by default as tasks:
+
+```javascript
+function foo(callback){
+    setTimeout(function(){
+        callback(null, 'foo');
+    });
+}
+
+var eventuallyFoo = righto(getFoo);
+
+eventuallyFoo(function(error, result){
+    result === 'foo';
+});
+```
+
+### Promise
+
+righto supports passing Promises as a dependency:
+
+```javascript
+var somePromise = new Promise(function(resolve, reject){
+    setTimeout(function(){
+        resolve('foo');
+    });
+});
+
+var someRighto = righto(function(somePromiseResult, done){
+    done(null, somePromiseResult);
+}, somePromise);
+
+someRighto(function(error, result){
+    result === 'foo';
+});
+```
+
+### Generators (yield)
+
+righto supports running a generator (or any `next`able iterator):
+
+```javascript
+var generated = righto.iterate(function*(){
+    var x = yield righto(function(done){
+        setTimeout(function(){
+            done(null, 'x');
+        });
+    });
+
+    var y = yield righto(function(done){
+        setTimeout(function(){
+            done(null, 'y');
+        });
+    });
+
+    return x + y;
+});
+
+generated(function(error, result){
+    result === 'xy';
+});
+```
+
 ## Errors
 
 Errors bubble up through tasks, so if a dependancy errors, the task errors.
@@ -139,7 +205,7 @@ getBar(function(error, result){
 
 You can create a new `righto` that resolves the key/runs a function on a result like so:
 
-```
+```javascript
 var user = righto(getUser);
 
 var userName = user.get('name');
@@ -154,7 +220,7 @@ userName(function(error, name){
 
 And keys can be `righto`'s as well:
 
-```
+```javascript
 var user = righto(getUser);
 var userKey = righto(getKey);
 
@@ -170,7 +236,7 @@ userName(function(error, something){
 
 Any value can be turned into a righto using righto.from();
 
-```
+```javascript
 var num = righto.from(1); // -> righto:number;
 var string = righto.from('hello'); // -> righto:string;
 var nothing = righto.from(null); // -> righto:null;

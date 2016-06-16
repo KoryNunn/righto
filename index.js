@@ -6,12 +6,20 @@ function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
 }
 
+function isPromise(x){
+    return typeof Promise !== 'undefined' && x instanceof Promise;
+}
+
+function isResolveable(x){
+    return isRighto(x) || isPromise(x);
+}
+
 function slice(list, start, end){
     return Array.prototype.slice.call(list, start, end);
 }
 
 function resolveDependency(task, done){
-    if(typeof Promise !== 'undefined' && task instanceof Promise){
+    if(isPromise(task)){
         task = righto(abbott(task));
     }
 
@@ -66,6 +74,33 @@ function proxy(instance){
     return instance._;
 }
 
+function resolveIterator(fn){
+    return function(){
+        var args = slice(arguments),
+            callback = args.pop(),
+            generator = fn.apply(null, args),
+            lastValue;
+
+        function run(){
+            var next = generator.next(lastValue);
+            if(next.done){
+                return callback(null, next.value);
+            }
+            if(isResolveable(next.value)){
+                righto.sync(function(value){
+                    lastValue = value;
+                    run();
+                }, next.value)();
+                return;
+            }
+            lastValue = next.value;
+            run();
+        }
+
+        run();
+    };
+}
+
 function righto(fn){
     var args = slice(arguments),
         fn = args.shift(),
@@ -73,6 +108,7 @@ function righto(fn){
         started = 0,
         callbacks = [],
         results;
+
 
     if(typeof fn !== 'function'){
         throw 'No task function passed to righto';
@@ -197,6 +233,13 @@ righto.resolve = function(object, deep){
         }, {});
     }, pairs);
 };
+
+righto.iterate = function(){
+    var args = slice(arguments),
+        fn = args.shift();
+
+    return righto.apply(null, [resolveIterator(fn)].concat(args));
+}
 
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){

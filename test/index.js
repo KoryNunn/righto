@@ -481,3 +481,89 @@ test('promise support', function(t){
         t.equal(bar, 'foo');
     });
 });
+
+test('generator support', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'x');
+            });
+        });
+
+        var y = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(result, 'xy');
+    });
+});
+
+test('generator support with args', function(t){
+    t.plan(1);
+
+    var foo = righto(function(callback){
+        asyncify(function(){
+            callback(null, 'foo');
+        });
+    });
+
+    var bar = righto(function(callback){
+        asyncify(function(){
+            callback(null, 'bar');
+        });
+    });
+
+    function* doThings(foo, bar){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, foo);
+            });
+        });
+
+        var y = yield righto(function(done){
+            asyncify(function(){
+                done(null, bar);
+            });
+        });
+
+        return x + y;
+    }
+
+    var thingsDone = righto.iterate(doThings, foo, bar);
+
+    thingsDone(function(error, result){
+        t.equal(result, 'foobar');
+    });
+});
+
+test('generators that yield promises :/', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'x');
+            });
+        });
+
+        var y = yield new Promise(function(resolve, reject){
+            asyncify(function(){
+                resolve('y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(result, 'xy');
+    });
+});
