@@ -65,8 +65,8 @@ function foo(callback){
 
 var eventuallyFoo = righto(getFoo);
 
-eventuallyFoo(function(error, foo){
-    foo === 'foo';
+eventuallyFoo(function(error, result){
+    result === 'foo';
 });
 ```
 
@@ -85,8 +85,8 @@ var someRighto = righto(function(somePromiseResult, done){
     done(null, somePromiseResult);
 }, somePromise);
 
-bar(function(error, bar){
-    bar === 'foo';
+bar(function(error, result){
+    result === 'foo';
 });
 ```
 
