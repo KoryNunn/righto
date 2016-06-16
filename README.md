@@ -92,10 +92,10 @@ bar(function(error, result){
 
 ### Generators (yield)
 
-righto supports passing a generator as a task:
+righto supports running a generator (or any `next`able iterator):
 
 ```javascript
-var generated = righto(function*(){
+var generated = righto.iterate(function*(){
     var x = yield righto(function(done){
         setTimeout(function(){
             done(null, 'x');

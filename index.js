@@ -6,12 +6,20 @@ function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
 }
 
+function isPromise(x){
+    return typeof Promise !== 'undefined' && x instanceof Promise;
+}
+
+function isResolveable(x){
+    return isRighto(x) || isPromise(x);
+}
+
 function slice(list, start, end){
     return Array.prototype.slice.call(list, start, end);
 }
 
 function resolveDependency(task, done){
-    if(typeof Promise !== 'undefined' && task instanceof Promise){
+    if(isPromise(task)){
         task = righto(abbott(task));
     }
 
@@ -66,7 +74,7 @@ function proxy(instance){
     return instance._;
 }
 
-function resolveGenerator(fn){
+function resolveIterator(fn){
     return function(){
         var args = slice(arguments),
             callback = args.pop(),
@@ -78,11 +86,11 @@ function resolveGenerator(fn){
             if(next.done){
                 return callback(null, next.value);
             }
-            if(isRighto(next.value)){
-                next.value(function(error, value){
+            if(isResolveable(next.value)){
+                righto.sync(function(value){
                     lastValue = value;
                     run();
-                });
+                }, next.value)();
                 return;
             }
             lastValue = next.value;
@@ -104,10 +112,6 @@ function righto(fn){
 
     if(typeof fn !== 'function'){
         throw 'No task function passed to righto';
-    }
-
-    if(fn.constructor.name === 'GeneratorFunction'){
-        return righto.apply(null, [resolveGenerator(fn)].concat(args));
     }
 
     function resolve(callback){
@@ -229,6 +233,13 @@ righto.resolve = function(object, deep){
         }, {});
     }, pairs);
 };
+
+righto.iterate = function(){
+    var args = slice(arguments),
+        fn = args.shift();
+
+    return righto.apply(null, [resolveIterator(fn)].concat(args));
+}
 
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){

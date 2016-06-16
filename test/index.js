@@ -485,7 +485,7 @@ test('promise support', function(t){
 test('generator support', function(t){
     t.plan(1);
 
-    var generated = righto(function*(){
+    var generated = righto.iterate(function*(){
         var x = yield righto(function(done){
             asyncify(function(){
                 done(null, 'x');
@@ -537,9 +537,33 @@ test('generator support with args', function(t){
         return x + y;
     }
 
-    var thingsDone = righto(doThings, foo, bar);
+    var thingsDone = righto.iterate(doThings, foo, bar);
 
     thingsDone(function(error, result){
         t.equal(result, 'foobar');
+    });
+});
+
+test('generators that yield promises :/', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'x');
+            });
+        });
+
+        var y = yield new Promise(function(resolve, reject){
+            asyncify(function(){
+                resolve('y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(result, 'xy');
     });
 });
