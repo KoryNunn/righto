@@ -85,7 +85,7 @@ var someRighto = righto(function(somePromiseResult, done){
     done(null, somePromiseResult);
 }, somePromise);
 
-bar(function(error, result){
+someRighto(function(error, result){
     result === 'foo';
 });
 ```
