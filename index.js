@@ -66,6 +66,33 @@ function proxy(instance){
     return instance._;
 }
 
+function resolveGenerator(fn){
+    return function(){
+        var args = slice(arguments),
+            callback = args.pop(),
+            generator = fn.apply(null, args),
+            lastValue;
+
+        function run(){
+            var next = generator.next(lastValue);
+            if(next.done){
+                return callback(null, next.value);
+            }
+            if(isRighto(next.value)){
+                next.value(function(error, value){
+                    lastValue = value;
+                    run();
+                });
+                return;
+            }
+            lastValue = next.value;
+            run();
+        }
+
+        run();
+    };
+}
+
 function righto(fn){
     var args = slice(arguments),
         fn = args.shift(),
@@ -74,8 +101,13 @@ function righto(fn){
         callbacks = [],
         results;
 
+
     if(typeof fn !== 'function'){
         throw 'No task function passed to righto';
+    }
+
+    if(fn.constructor.name === 'GeneratorFunction'){
+        return righto.apply(null, [resolveGenerator(fn)].concat(args));
     }
 
     function resolve(callback){
