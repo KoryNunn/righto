@@ -1,5 +1,6 @@
 var foreign = require('foreign'),
-    cpsenize = require('cpsenize');
+    cpsenize = require('cpsenize'),
+    abbott = require('abbott');
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -10,6 +11,10 @@ function slice(list, start, end){
 }
 
 function resolveDependency(task, done){
+    if(typeof Promise !== 'undefined' && task instanceof Promise){
+        task = righto(abbott(task));
+    }
+
     if(isRighto(task)){
         return task(function(error){
             var results = slice(arguments, 1, 2);

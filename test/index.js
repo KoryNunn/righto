@@ -405,6 +405,11 @@ test('0 results resolve 1 argument as a dep', function(t){
 test('proxy support', function(t){
     t.plan(1);
 
+    if(typeof Proxy === 'undefined'){
+        t.pass('Proxy not available');
+        return;
+    }
+
     function getStuff(callback){
         callback(null, {foo: {bar: 'bar'}});
     }
@@ -418,6 +423,11 @@ test('proxy support', function(t){
 
 test('proxy support all', function(t){
     t.plan(1);
+
+    if(typeof Proxy === 'undefined'){
+        t.pass('Proxy not available');
+        return;
+    }
 
     t.equal(righto.proxy.all, righto.all);
 });
@@ -451,5 +461,23 @@ test('resolve deep', function(t){
 
     bar(function(error, bar){
         t.deepEqual(bar, {foo: {bar: 'foo'}});
+    });
+});
+
+test('promise support', function(t){
+    t.plan(1);
+
+    var somePromise = new Promise(function(resolve, reject){
+            asyncify(function(){
+                resolve('foo');
+            });
+        });
+
+    var bar = righto(function(someValue, done){
+        done(null, someValue);
+    }, somePromise);
+
+    bar(function(error, bar){
+        t.equal(bar, 'foo');
     });
 });
