@@ -371,6 +371,43 @@ test('mate ignored', function(t){
     });
 });
 
+test('mate ignored only', function(t){
+    t.plan(1);
+
+    function getStuff(callback){
+        asyncify(function(){
+            callback(null, 3);
+        });
+    }
+
+    var stuff = righto(getStuff);
+
+    var ignoredStuff = righto.mate([stuff]);
+
+    ignoredStuff(function(error){
+        t.equal(arguments.length, 1);
+    });
+});
+
+test('mate ignored error', function(t){
+    t.plan(2);
+
+    function getStuff(callback){
+        asyncify(function(){
+            callback('error');
+        });
+    }
+
+    var stuff = righto(getStuff);
+
+    var ignoredStuff = righto.mate([stuff]);
+
+    ignoredStuff(function(error){
+        t.equal(arguments.length, 1);
+        t.equal(error, 'error');
+    });
+});
+
 test('errors don\'t get gobbled', function(t){
     t.plan(1);
 
