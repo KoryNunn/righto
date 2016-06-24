@@ -7,10 +7,7 @@ function isRighto(x){
 }
 
 function isThenable(x){
-    return (
-        (typeof Promise !== 'undefined' && x instanceof Promise) ||
-        (x && typeof x.then === 'function')
-    );
+    return x && typeof x.then === 'function';
 }
 
 function isResolveable(x){
