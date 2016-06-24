@@ -519,6 +519,24 @@ test('promise support', function(t){
     });
 });
 
+test('fake promise support', function(t){
+    t.plan(1);
+
+    var somePromise = {
+            then: function(resolve, reject){
+                resolve('foo');
+            }
+        };
+
+    var bar = righto(function(someValue, done){
+        done(null, someValue);
+    }, somePromise);
+
+    bar(function(error, bar){
+        t.equal(bar, 'foo');
+    });
+});
+
 test('generator support', function(t){
     t.plan(1);
 
