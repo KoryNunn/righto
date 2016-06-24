@@ -79,9 +79,13 @@ function resolveIterator(fn){
         var args = slice(arguments),
             callback = args.pop(),
             generator = fn.apply(null, args),
-            lastValue;
+            lastValue,
+            errored;
 
         function run(){
+            if(errored){
+                return;
+            }
             var next = generator.next(lastValue);
             if(next.done){
                 return callback(null, next.value);
@@ -90,7 +94,12 @@ function resolveIterator(fn){
                 righto.sync(function(value){
                     lastValue = value;
                     run();
-                }, next.value)();
+                }, next.value)(function(error){
+                    if(error){
+                        errored = true;
+                        callback(error);
+                    }
+                });
                 return;
             }
             lastValue = next.value;

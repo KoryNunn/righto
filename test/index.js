@@ -537,24 +537,6 @@ test('fake promise support', function(t){
     });
 });
 
-test('fake promise support reject', function(t){
-    t.plan(1);
-
-    var rejectPromise = {
-        then: function(resolve, reject){
-            reject('bar');
-        }
-    };
-
-    var foo = righto(function(someValue, done){
-        done(null, someValue);
-    }, rejectPromise);
-
-    foo(function(error, foo){
-        t.equal(error, 'bar');
-    });
-});
-
 test('generator support', function(t){
     t.plan(1);
 
@@ -579,7 +561,31 @@ test('generator support', function(t){
     });
 });
 
-test('generator support with reject', function(t){
+test('generator support errors', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done('error');
+            });
+        });
+
+        var y = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(error, 'error');
+    });
+});
+
+test('generator support errors 2', function(t){
     t.plan(1);
 
     var generated = righto.iterate(function*(){
@@ -591,7 +597,7 @@ test('generator support with reject', function(t){
 
         var y = yield righto(function(done){
             asyncify(function(){
-                done('y got rejected');
+                done('error');
             });
         });
 
@@ -599,7 +605,7 @@ test('generator support with reject', function(t){
     });
 
     generated(function(error, result){
-        t.equal(error, 'y got rejected');
+        t.equal(error, 'error');
     });
 });
 
