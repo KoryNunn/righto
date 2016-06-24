@@ -537,6 +537,24 @@ test('fake promise support', function(t){
     });
 });
 
+test('fake promise support reject', function(t){
+    t.plan(1);
+
+    var rejectPromise = {
+        then: function(resolve, reject){
+            reject('bar');
+        }
+    };
+
+    var foo = righto(function(someValue, done){
+        done(null, someValue);
+    }, rejectPromise);
+
+    foo(function(error, foo){
+        t.equal(error, 'bar');
+    });
+});
+
 test('generator support', function(t){
     t.plan(1);
 
@@ -558,6 +576,30 @@ test('generator support', function(t){
 
     generated(function(error, result){
         t.equal(result, 'xy');
+    });
+});
+
+test('generator support with reject', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'x');
+            });
+        });
+
+        var y = yield righto(function(done){
+            asyncify(function(){
+                done('y got rejected');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(error, 'y got rejected');
     });
 });
 
