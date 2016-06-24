@@ -6,12 +6,15 @@ function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
 }
 
-function isPromise(x){
-    return typeof Promise !== 'undefined' && x instanceof Promise;
+function isThenable(x){
+    return (
+        (typeof Promise !== 'undefined' && x instanceof Promise) ||
+        (x && typeof x.then === 'function')
+    );
 }
 
 function isResolveable(x){
-    return isRighto(x) || isPromise(x);
+    return isRighto(x) || isThenable(x);
 }
 
 function slice(list, start, end){
@@ -19,7 +22,7 @@ function slice(list, start, end){
 }
 
 function resolveDependency(task, done){
-    if(isPromise(task)){
+    if(isThenable(task)){
         task = righto(abbott(task));
     }
 
