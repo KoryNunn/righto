@@ -670,3 +670,31 @@ test('generators that yield promises :/', function(t){
         t.equal(result, 'xy');
     });
 });
+
+test('generators with passed errors', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(reject){
+        var x = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'x');
+            });
+        });
+
+        if(x === 'x'){
+            return reject('foo');
+        }
+
+        var y = yield righto(function(done){
+            asyncify(function(){
+                done(null, 'y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(error, 'foo');
+    });
+});

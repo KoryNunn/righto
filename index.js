@@ -78,9 +78,12 @@ function resolveIterator(fn){
     return function(){
         var args = slice(arguments),
             callback = args.pop(),
-            generator = fn.apply(null, args),
-            lastValue,
-            errored;
+            errored,
+            generator = fn.apply(null, args.concat(function(error){
+                errored = true;
+                callback(error);
+            })),
+            lastValue;
 
         function run(){
             if(errored){
