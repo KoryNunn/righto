@@ -683,7 +683,7 @@ test('generators with passed errors', function(t){
 
         reject('foo');
 
-        var x = yield righto(function(done){
+        var y = yield righto(function(done){
             asyncify(function(){
                 done(null, 'y');
             });
