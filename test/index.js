@@ -609,6 +609,56 @@ test('generator support errors 2', function(t){
     });
 });
 
+test('generator support throw', function(t){
+   t.plan(1);
+
+   var generated = righto.iterate(function*(done){
+       var x = yield righto(function(done){
+           asyncify(function(){
+               done(null, 'x');
+           });
+       });
+
+       var y = yield righto(function(done){
+           asyncify(function(){
+               done(null, 'y');
+           });
+       });
+
+       throw('error in generator function');
+
+       return x + y;
+   });
+
+   generated(function(error, result){
+     t.equal(error, 'error in generator function');
+   });
+});
+
+test('generator support throw within yield', function(t){
+   t.plan(1);
+
+   var generated = righto.iterate(function*(done){
+       var x = yield righto(function(done){
+           asyncify(function(){
+               done(null, 'x');
+           });
+       });
+
+       var y = yield righto(function(done){
+           asyncify(function(){
+               throw 'error in y';
+           });
+       });
+
+       return x + y;
+   });
+
+   generated(function(error, result){
+     t.equal(error, 'error in y');
+   });
+});
+
 test('generator support with args', function(t){
     t.plan(1);
 
