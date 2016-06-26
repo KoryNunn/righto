@@ -201,6 +201,39 @@ getBar(function(error, result){
 });
 ```
 
+## All
+
+righto.all takes N tasks, or an Array of tasks as the first argument, resolves them all
+in parallel, and results in an Array of results.
+
+```javascript
+
+var task1 = righto(function(done){
+    setTimeout(function(){
+        done(null, 'a');
+    }, 1000);
+});
+
+var task2 = righto(function(done){
+    setTimeout(function(){
+        done(null, 'b');
+    }, 1000);
+});
+
+var task3 = righto(function(done){
+    setTimeout(function(){
+        done(null, 'c');
+    }, 1000);
+});
+
+var all = righto.all([task1, task2, task3]);
+
+all(function(error, results){
+    results; // -> ['a','b','c']
+});
+
+```
+
 ## Subkeys
 
 You can create a new `righto` that resolves the key/runs a function on a result like so:
