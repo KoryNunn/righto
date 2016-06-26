@@ -681,7 +681,9 @@ test('generators with passed errors', function(t){
             });
         });
 
-        reject('foo');
+        if(x === 'x'){
+            return reject('foo');
+        }
 
         var y = yield righto(function(done){
             asyncify(function(){
