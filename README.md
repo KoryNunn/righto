@@ -298,6 +298,32 @@ bar(function(error, bar){
 });
 ```
 
+## All
+
+You may want to run several tasks in parallel.
+
+For this, you can use righto.all.
+
+```javascript
+function getStuff(callback){
+    // eventually...
+    callback(null, 3);
+}
+var stuff = righto(getStuff);
+
+function getOtherStuff(callback){
+    // eventually...
+    callback(null, 7);
+}
+var otherStuff = righto(getOtherStuff);
+
+var stuffInParallelWithOtherStuff = righto.all([stuff, otherStuff]);
+
+stuffInParallelWithOtherStuff(function(err, result){
+    result -> [3, 7]
+});
+```
+
 ## Mate
 
 Occasionally you might want to mate a number of tasks into one task.
