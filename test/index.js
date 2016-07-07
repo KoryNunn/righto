@@ -698,3 +698,24 @@ test('generators with passed errors', function(t){
         t.equal(error, 'foo');
     });
 });
+
+test('righto.value', function(t){
+    t.plan(2);
+
+    var righto1 = righto(function(done){
+            done(null, 5);
+        });
+
+    var rightoValue = righto.value(righto1);
+
+    var righto2 = righto(function(value, done){
+            t.notEqual(value, 5);
+
+            value(function(error, x){
+                t.equal(x, 5);
+            });
+
+        }, rightoValue);
+
+    righto2();
+});

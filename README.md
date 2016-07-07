@@ -234,6 +234,30 @@ all(function(error, results){
 
 ```
 
+## Value (passing resolveables as unresolved arguments)
+
+Sometimes it may be required to pass a resolveable (a righto, or promise) without as an argument,
+rather than passing the resolved value of the resolvable. you can do this using `righto.value(resolvable)`
+
+```javascript
+var righto1 = righto(function(done){
+        done(null, 5);
+    });
+
+var rightoValue = righto.value(righto1);
+
+var righto2 = righto(function(value, done){
+        // value === righto1
+
+        value(function(error, x){
+            // x === 5;
+        });
+
+    }, rightoValue);
+
+righto2();
+```
+
 ## Subkeys
 
 You can create a new `righto` that resolves the key/runs a function on a result like so:

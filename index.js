@@ -79,11 +79,17 @@ function resolveIterator(fn){
         var args = slice(arguments),
             callback = args.pop(),
             errored,
-            generator = fn.apply(null, args.concat(function(error){
-                errored = true;
-                callback(error);
-            })),
             lastValue;
+
+        function reject(error){
+            if(errored){
+                return;
+            }
+            errored = true;
+            callback(error);
+        }
+
+        var generator = fn.apply(null, args.concat(reject));
 
         function run(){
             if(errored){
@@ -91,6 +97,9 @@ function resolveIterator(fn){
             }
             var next = generator.next(lastValue);
             if(next.done){
+                if(errored){
+                    return;
+                }
                 return callback(null, next.value);
             }
             if(isResolveable(next.value)){
@@ -99,8 +108,7 @@ function resolveIterator(fn){
                     run();
                 }, next.value)(function(error){
                     if(error){
-                        errored = true;
-                        callback(error);
+                        reject(error);
                     }
                 });
                 return;
@@ -253,6 +261,13 @@ righto.iterate = function(){
     return righto.apply(null, [resolveIterator(fn)].concat(args));
 }
 
+righto.value = function(){
+    var args = arguments;
+    return righto(function(done){
+        done.apply(null, [null].concat(slice(args)));
+    });
+};
+
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){
         throw 'This environment does not support Proxy\'s';
@@ -260,6 +275,7 @@ righto.proxy = function(){
 
     return proxy(righto.apply(this, arguments));
 };
+
 for(var key in righto){
     righto.proxy[key] = righto[key];
 }
