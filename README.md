@@ -233,6 +233,29 @@ all(function(error, results){
 });
 
 ```
+## Sync
+
+Synchronous functions can be used to create righto tasks using righto.sync:
+
+```javascript
+
+var someNumber = righto(function(done){
+    setTimeout(function(){
+        done(null, 5);
+    }, 1000);
+}
+
+function addFive(value){
+    return value + 5;
+}
+
+var syncTask = righto.sync(addFive, someNumber);
+
+syncTask(function(error, result){
+    result; // -> 10
+});
+
+```
 
 ## Value (passing resolveables as unresolved arguments)
 
