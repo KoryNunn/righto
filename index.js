@@ -14,6 +14,10 @@ function isResolveable(x){
     return isRighto(x) || isThenable(x);
 }
 
+function isTake(x){
+    return x && typeof x === 'object' && '__take__' in x;
+}
+
 function slice(list, start, end){
     return Array.prototype.slice.call(list, start, end);
 }
@@ -35,13 +39,22 @@ function resolveDependency(task, done){
         });
     }
 
-    if(Array.isArray(task) && isRighto(task[0]) && !isRighto(task[1])){
-        return task[0](function(error){
+    function take(targetTask){
+        var keys = slice(arguments, 1);
+        return targetTask(function(error){
             var args = slice(arguments, 1);
-            done(error, task.slice(1).map(function(key){
+            done(error, keys.map(function(key){
                 return args[key];
             }));
         });
+    }
+
+    if(Array.isArray(task) && isRighto(task[0]) && !isRighto(task[1])){
+        return take.apply(null, task);
+    }
+
+    if(isTake(task)){
+        return take.apply(null, task.__take__);
     }
 
     return done(null, [task]);
@@ -223,6 +236,14 @@ righto.mate = function(){
     }].concat(slice(arguments)));
 };
 
+righto.take = function(){
+    return {__take__: slice(arguments)};
+};
+
+righto.after = function(task){
+    return {__take__: [task]};
+};
+
 righto.resolve = function(object, deep){
     if(isRighto(object)){
         return righto.sync(function(object){
@@ -259,7 +280,7 @@ righto.iterate = function(){
         fn = args.shift();
 
     return righto.apply(null, [resolveIterator(fn)].concat(args));
-}
+};
 
 righto.value = function(){
     var args = arguments;

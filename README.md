@@ -149,7 +149,7 @@ getBar(function(error, result){
 });
 ```
 
-## Multiple results
+## Take / Multiple results
 
 By default, dependant tasks are passed only the first result of a dependency `righto`. eg:
 
@@ -193,11 +193,38 @@ function bar(a, b callback){
     callback(null, [a, b].join(' '));
 }
 
-var getBar = righto(bar, [getFoo, 0, 2]); // Take result 0, and result 2, from getFoo
+var getBar = righto(bar, righto.take(getFoo, 0, 2)); // Take result 0, and result 2, from getFoo
 
 getBar(function(error, result){
     // ...1 second later...
     result -> 'first third';
+});
+```
+
+## After
+
+Sometimes you need a task to run after another has succeeded, but you don't need its results,
+righto.after(task) can be used to achieve this:
+
+```
+function foo(callback){
+    setTimeout(function(){
+
+        callback(null, 'first result');
+
+    }, 1000);
+}
+
+var getFoo = righto(foo);
+
+function bar(callback){
+    callback(null, 'second result');
+}
+
+var getBar = righto(bar, righto.after(getFoo)); // wait for foo before running bar.
+
+getBar(function(error, result){
+    result -> 'second result';
 });
 ```
 

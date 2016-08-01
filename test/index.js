@@ -72,6 +72,58 @@ test('ignored deps', function(t){
 
 });
 
+test('ignored deps with take', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 2, 3);
+        });
+    }
+
+    function foo(callback){
+        asyncify(function(){
+            callback(null, 'hello');
+        });
+    }
+
+    var getBar = righto(bar);
+
+    var getFoo = righto(foo, righto.take(getBar));
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 'hello', 'Got correct result');
+    });
+
+});
+
+test('ignored deps with after', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 2, 3);
+        });
+    }
+
+    function foo(callback){
+        asyncify(function(){
+            callback(null, 'hello');
+        });
+    }
+
+    var getBar = righto(bar);
+
+    var getFoo = righto(foo, righto.after(getBar));
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 'hello', 'Got correct result');
+    });
+
+});
+
 test('multiple deps', function(t){
     t.plan(2);
 
@@ -90,6 +142,31 @@ test('multiple deps', function(t){
     var getBar = righto(bar);
 
     var getFoo = righto(foo, [getBar, 0, 1]);
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, -1, 'Got correct result');
+    });
+});
+
+test('multiple deps with take', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 2, 3);
+        });
+    }
+
+    function foo(a, b, callback){
+        asyncify(function(){
+            callback(null, a - b);
+        });
+    }
+
+    var getBar = righto(bar);
+
+    var getFoo = righto(foo, righto.take(getBar, 0, 1));
 
     getFoo(function(error, result){
         t.notOk(error, 'no error');
@@ -122,6 +199,31 @@ test('multiple deps repeated', function(t){
     });
 });
 
+test('multiple deps repeated with take', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 2, 3);
+        });
+    }
+
+    function foo(a, b, callback){
+        asyncify(function(){
+            callback(null, a - b);
+        });
+    }
+
+    var getBar = righto(bar);
+
+    var getFoo = righto(foo, righto.take(getBar, 1, 1));
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 0, 'Got correct result');
+    });
+});
+
 test('multiple deps reordered', function(t){
     t.plan(2);
 
@@ -140,6 +242,31 @@ test('multiple deps reordered', function(t){
     var getBar = righto(bar);
 
     var getFoo = righto(foo, [getBar, 1, 0]);
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 1, 'Got correct result');
+    });
+});
+
+test('multiple deps reordered with take', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 2, 3);
+        });
+    }
+
+    function foo(a, b, callback){
+        asyncify(function(){
+            callback(null, a - b);
+        });
+    }
+
+    var getBar = righto(bar);
+
+    var getFoo = righto(foo, righto.take(getBar, 1, 0));
 
     getFoo(function(error, result){
         t.notOk(error, 'no error');
