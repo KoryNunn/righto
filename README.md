@@ -179,19 +179,7 @@ getBar(function(error, result){
 But you can pick and choose what results are used from a dependancy like so:
 
 ```javascript
-function foo(callback){
-    setTimeout(function(){
-
-        callback(null, 'first', 'second', 'third');
-
-    }, 1000);
-}
-
-var getFoo = righto(foo);
-
-function bar(a, b callback){
-    callback(null, [a, b].join(' '));
-}
+// foo() and bar() as defined above...
 
 var getBar = righto(bar, righto.take(getFoo, 0, 2)); // Take result 0, and result 2, from getFoo
 
@@ -206,7 +194,7 @@ getBar(function(error, result){
 Sometimes you need a task to run after another has succeeded, but you don't need its results,
 righto.after(task) can be used to achieve this:
 
-```
+```javascript
 function foo(callback){
     setTimeout(function(){
 
