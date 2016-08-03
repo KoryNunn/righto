@@ -299,6 +299,38 @@ test('multiple deps, default result', function(t){
     });
 });
 
+test('multiple ignored deps with after', function(t){
+    t.plan(2);
+
+    function bar(callback){
+        asyncify(function(){
+            callback(null, 1);
+        });
+    }
+
+    function baz(callback){
+        asyncify(function(){
+            callback(null, 2);
+        });
+    }
+
+    function foo(callback){
+        asyncify(function(){
+            callback(null, 'dooby');
+        });
+    }
+
+    var getBar = righto(bar);
+    var getBaz = righto(baz);
+
+    var getFoo = righto(foo, righto.after(getBar, getBaz));
+
+    getFoo(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 'dooby', 'Got correct result');
+    });
+});
+
 test('array dep result', function(t){
     t.plan(2);
 

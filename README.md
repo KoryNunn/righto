@@ -192,7 +192,7 @@ getBar(function(error, result){
 ## After
 
 Sometimes you need a task to run after another has succeeded, but you don't need its results,
-righto.after(task) can be used to achieve this:
+righto.after(task1, task2, taskN...) can be used to achieve this:
 
 ```javascript
 function foo(callback){

@@ -241,7 +241,11 @@ righto.take = function(){
 };
 
 righto.after = function(task){
-    return {__take__: [task]};
+    if(arguments.length === 1){
+        return {__take__: [task]};
+    }
+
+    return {__take__: [righto.mate.apply(null, arguments)]};
 };
 
 righto.resolve = function(object, deep){
