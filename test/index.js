@@ -581,6 +581,58 @@ test('errors don\'t get gobbled', function(t){
     });
 });
 
+test('surely errors', function(t){
+    t.plan(4);
+
+    var errorOrX = righto.surely(function(done){
+        asyncify(function(){
+            done(true);
+        });
+    });
+
+    var errorOrY = righto.surely(function(done){
+        asyncify(function(){
+            done(null, 'y');
+        });
+    });
+
+    righto(function([xError, x], [yError, y]){
+
+        t.ok(xError);
+        t.notOk(x);
+        t.notOk(yError);
+        t.ok(y);
+
+    }, errorOrX, errorOrY)();
+});
+
+test('surely multiple results', function(t){
+    t.plan(6);
+
+    var errorOrX = righto.surely(function(done){
+        asyncify(function(){
+            done(true);
+        });
+    });
+
+    var errorOrY = righto.surely(function(done){
+        asyncify(function(){
+            done(null, 'y1', 'y2', 'y3');
+        });
+    });
+
+    righto(function([xError, x], [yError, y1, y2, y3]){
+
+        t.ok(xError);
+        t.notOk(x);
+        t.notOk(yError);
+        t.equal(y1, 'y1');
+        t.equal(y2, 'y2');
+        t.equal(y3, 'y3');
+
+    }, errorOrX, errorOrY)();
+});
+
 test('0 results resolve 1 argument as a dep', function(t){
     t.plan(2);
 
@@ -855,6 +907,37 @@ test('generators with passed errors', function(t){
 
     generated(function(error, result){
         t.equal(error, 'foo');
+    });
+});
+
+test('generators with surely errors', function(t){
+    t.plan(3);
+
+    var generated = righto.iterate(function*(reject){
+        var [xError, x] = yield righto.surely(function(done){
+            asyncify(function(){
+                done(true);
+            });
+        });
+
+        t.ok(xError);
+        t.notOk(x);
+
+        if(xError){
+            return reject('xError');
+        }
+
+        var [yError, y] = yield righto.surely(function(done){
+            asyncify(function(){
+                done(null, 'y');
+            });
+        });
+
+        return x + y;
+    });
+
+    generated(function(error, result){
+        t.equal(error, 'xError');
     });
 });
 
