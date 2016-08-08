@@ -327,6 +327,34 @@ userName(function(error, something){
 
 ```
 
+## Surely (resolve [error?, results...?])
+
+You can resolve a task to an array containing either
+the error or results from a righto with `righto.surely`
+
+```javascript
+
+var errorOrX = righto.surely(function(done){
+        done(new Error('borked'));
+    });
+
+var errorOrY = righto.surely(function(done){
+        done(null, 'y');
+    });
+
+var z = righto(function([xError, x], [yError, y]){
+
+        xError; // -> Error 'borked'
+        x; // -> undefined
+        yError; // -> null
+        y; // -> 'y'
+
+    }, errorOrX, errorOrY);
+
+z();
+
+```
+
 ## Possible rightos: righto.from(anything)
 
 Any value can be turned into a righto using righto.from();

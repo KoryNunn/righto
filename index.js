@@ -293,6 +293,18 @@ righto.value = function(){
     });
 };
 
+righto.surely = function(task){
+    if(!isResolveable(task)){
+        task = righto.apply(null, arguments);
+    }
+
+    return righto(function(done){
+        task(function(){
+            done(null, slice(arguments));
+        });
+    });
+};
+
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){
         throw 'This environment does not support Proxy\'s';
