@@ -252,10 +252,10 @@ righto.resolve = function(object, deep){
     if(isRighto(object)){
         return righto.sync(function(object){
             return righto.resolve(object, deep);
-        }, object)
+        }, object);
     }
 
-    if(!(typeof object === 'object' || typeof object === 'function')){
+    if(!object || !(typeof object === 'object' || typeof object === 'function')){
         return righto.from(object);
     }
 
