@@ -712,6 +712,16 @@ test('resolve deep', function(t){
     });
 });
 
+test('resolve null', function(t){
+    t.plan(1);
+
+    var bar = righto.resolve(null);
+
+    bar(function(error, bar){
+        t.equal(bar, null);
+    });
+});
+
 test('promise support', function(t){
     t.plan(1);
 
