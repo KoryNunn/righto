@@ -144,7 +144,7 @@ function righto(fn){
 
 
     if(typeof fn !== 'function'){
-        throw 'No task function passed to righto';
+        throw new Error('No task function passed to righto');
     }
 
     function resolve(callback){
@@ -155,7 +155,7 @@ function righto(fn){
         }
 
         if(typeof callback !== 'function'){
-            throw "Callback must be a function";
+            throw new Error('Callback must be a function');
         }
 
         if(results){
@@ -307,7 +307,7 @@ righto.surely = function(task){
 
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){
-        throw 'This environment does not support Proxy\'s';
+        throw new Error('This environment does not support Proxy\'s');
     }
 
     return proxy(righto.apply(this, arguments));
