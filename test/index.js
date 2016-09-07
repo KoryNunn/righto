@@ -971,3 +971,37 @@ test('righto.value', function(t){
 
     righto2();
 });
+
+test('sync', function(t){
+    t.plan(3);
+
+    function getStuff(callback){
+        t.pass('getStuff called');
+        return 3;
+    }
+
+    var stuff = righto.sync(getStuff);
+
+    stuff(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 3, 'Got correct result');
+    });
+
+});
+
+test('sync errors throw', function(t){
+    t.plan(2);
+
+    function getStuff(callback){
+        t.pass('getStuff called');
+        throw "BORKED";
+        return 3;
+    }
+
+    var stuff = righto.sync(getStuff);
+
+    t.throws(function(){
+        stuff();
+    });
+
+});
