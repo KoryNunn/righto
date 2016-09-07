@@ -1,6 +1,7 @@
 var foreign = require('foreign'),
-    cpsenize = require('cpsenize'),
     abbott = require('abbott');
+
+var nextTick = process.nextTick || setTimeout;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -197,7 +198,14 @@ function righto(fn){
 }
 
 righto.sync = function(fn){
-    return righto.apply(null, [cpsenize(fn)].concat(slice(arguments, 1)));
+    return righto.apply(null, [function(){
+        var args = slice(arguments),
+            done = args.pop();
+
+        nextTick(function(){
+            done(null, fn.apply(null, args));
+        });
+    }].concat(slice(arguments, 1)));
 };
 
 righto.all = function(task){

@@ -1000,8 +1000,10 @@ test('sync errors throw', function(t){
 
     var stuff = righto.sync(getStuff);
 
-    t.throws(function(){
-        stuff();
+    process.on('uncaughtException', function (error) {
+      t.equal(error, "BORKED");
     });
+
+    stuff();
 
 });
