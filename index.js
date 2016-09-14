@@ -135,6 +135,46 @@ function resolveIterator(fn){
     };
 }
 
+function addTracing(resolve, fn, args){
+    function getCallLine(stack){
+        return stack.split('\n')[3].match(/at (.*)/)[1];
+    }
+
+    var argMatch = fn.toString().match(/^[\w\s]*?\(((?:\w+[,\s]*?)*)\)/),
+        argNames = argMatch ? argMatch[1].split(/[,\s]+/g) : [];
+
+    resolve._stack = new Error().stack;
+    resolve._trace = function(tabs){
+        tabs = tabs || 0;
+        var spacing = '    ';
+        for(var i = 0; i < tabs; i ++){
+            spacing = spacing + '    ';
+        }
+        return args.map(function(arg, index){
+            return [arg, argNames[index] || index];
+        }).reduce(function(results, argInfo){
+            var arg = argInfo[0],
+                argName = argInfo[1];
+
+            if(isTake(arg)){
+                arg = arg.__take__[0];
+            }
+
+            if(isRighto(arg)){
+                var line = spacing + '- argument "' + argName + '" from ';
+                if(!arg._trace){
+                    results.push(line + 'Tracing was not enabled for this righto instance.');
+                }else{
+                    results.push(line + arg._trace(tabs + 1));
+                }
+            }
+
+            return results;
+        }, [getCallLine(resolve._stack)])
+        .join('\n');
+    };
+}
+
 function righto(fn){
     var args = slice(arguments),
         fn = args.shift(),
@@ -161,6 +201,12 @@ function righto(fn){
 
         if(results){
             return callback.apply(context, results);
+        }
+
+        if(righto._debug){
+            if(righto._autotrace || resolve._traceOnExecute){
+                console.log('Executing ' + fn.name + ' ' + resolve._trace());
+            }
         }
 
         callbacks.push(callback);
@@ -193,6 +239,10 @@ function righto(fn){
 
     resolve.get = get.bind(resolve);
     resolve.resolve = resolve;
+
+    if(righto._debug){
+        addTracing(resolve, fn, args);
+    }
 
     return resolve;
 }

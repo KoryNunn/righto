@@ -1007,3 +1007,39 @@ test('sync errors throw', function(t){
     stuff();
 
 });
+
+test('call tracing', function(t){
+    t.plan(1);
+
+    righto._debug = true;
+
+    var a = righto(function(callback){
+            asyncify(function(){
+                callback(null, 'a');
+            });
+        });
+
+    var b = righto(function(a, callback){
+            asyncify(function(){
+                callback(null, 'b');
+            });
+        }, a);
+
+    var c = righto(function(a, b, callback){
+            asyncify(function(){
+                callback(null, 'c');
+            });
+        }, a, b);
+
+    var d = righto(function(b, c, callback){
+            asyncify(function(){
+                callback(null, 'c');
+            });
+        }, b, c);
+
+    var trace = d._trace();
+
+    console.log(trace);
+
+    t.equal(trace.split(/\n/g).length, 7);
+});

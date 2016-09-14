@@ -460,3 +460,36 @@ foo.bar.baz(function(error, baz){
     baz === 'hello'
 });
 ```
+
+# Tracing
+
+You can get a trace of where a righto went to resolve its dependencies by setting:
+
+```javascript
+righto._debug = true;
+```
+
+which will tell any **following** calls to `righto` to store a stack trace against it.
+
+You can then retrieve the trace with:
+
+```javascript
+var x = righto(something, ...);
+
+x._trace(); ->
+```
+
+```
+something (.../index.js:1034:13)
+    - argument "b" from taskB (.../index.js:1022:13)
+        - argument "a" from taskA (.../index.js:1016:13)
+    - argument "c" from taskC (.../index.js:1028:13)
+        - argument "a" from taskA (.../index.js:1016:13)
+        - argument "b" from taskB (.../index.js:1022:13)
+            - argument "a" from taskA (.../index.js:1016:13)
+
+```
+
+## NOTE:
+
+Only rightos that were instantiated **after** setting the debug flag will support tracing.
