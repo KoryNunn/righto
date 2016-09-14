@@ -1,5 +1,4 @@
-var foreign = require('foreign'),
-    abbott = require('abbott');
+var abbott = require('abbott');
 
 var nextTick = process.nextTick || setTimeout;
 
@@ -19,9 +18,7 @@ function isTake(x){
     return x && typeof x === 'object' && '__take__' in x;
 }
 
-function slice(list, start, end){
-    return Array.prototype.slice.call(list, start, end);
-}
+var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
 function resolveDependency(task, done){
     if(isThenable(task)){
@@ -135,6 +132,106 @@ function resolveIterator(fn){
     };
 }
 
+function addTracing(resolve, fn, args){
+    function getCallLine(stack){
+        return stack.split('\n')[3].match(/at (.*)/)[1];
+    }
+
+    var argMatch = fn.toString().match(/^[\w\s]*?\(((?:\w+[,\s]*?)*)\)/),
+        argNames = argMatch ? argMatch[1].split(/[,\s]+/g) : [];
+
+    resolve._stack = new Error().stack;
+    resolve._trace = function(tabs){
+        tabs = tabs || 0;
+        var spacing = '    ';
+        for(var i = 0; i < tabs; i ++){
+            spacing = spacing + '    ';
+        }
+        return args.map(function(arg, index){
+            return [arg, argNames[index] || index];
+        }).reduce(function(results, argInfo){
+            var arg = argInfo[0],
+                argName = argInfo[1];
+
+            if(isTake(arg)){
+                arg = arg.__take__[0];
+            }
+
+            if(isRighto(arg)){
+                var line = spacing + '- argument "' + argName + '" from ';
+                if(!arg._trace){
+                    results.push(line + 'Tracing was not enabled for this righto instance.');
+                }else{
+                    results.push(line + arg._trace(tabs + 1));
+                }
+            }
+
+            return results;
+        }, [getCallLine(resolve._stack)])
+        .join('\n');
+    };
+}
+
+function taskComplete(){
+    var context = this[2],
+        results = arguments;
+    this[0](results);
+    this[1].forEach(function(callback){
+        callback.apply(context, results);
+    });
+}
+
+function errorOut(error, callback){
+    callback(error);
+}
+
+function resolveWithDependencies(done, error, argResults){
+    var fn = this[0],
+        callbacks = this[1],
+        context = this[2];
+
+    if(error){
+        return callbacks.forEach(errorOut.bind(null, error));
+    }
+
+    var args = [].concat.apply([], argResults);
+
+    args.push(taskComplete.bind([done, callbacks, context]));
+
+    fn.apply(null, args);
+}
+
+function resolveDependencies(args, complete, resolveDependency){
+    var results = [],
+        done = 0,
+        hasErrored;
+
+    if(!args.length){
+        complete(null, []);
+    }
+
+    function dependencyResolved(index, error, result){
+        if(hasErrored){
+            return;
+        }
+
+        if(error){
+            hasErrored = true;
+            return complete(error);
+        }
+
+        results[index] = result;
+
+        if(++done === args.length){
+            complete(null, results);
+        }
+    }
+
+    args.forEach(function(arg, index){
+        resolveDependency(arg, dependencyResolved.bind(null, index));
+    });
+}
+
 function righto(fn){
     var args = slice(arguments),
         fn = args.shift(),
@@ -142,7 +239,6 @@ function righto(fn){
         started = 0,
         callbacks = [],
         results;
-
 
     if(typeof fn !== 'function'){
         throw new Error('No task function passed to righto');
@@ -163,36 +259,31 @@ function righto(fn){
             return callback.apply(context, results);
         }
 
+        if(righto._debug){
+            if(righto._autotrace || resolve._traceOnExecute){
+                console.log('Executing ' + fn.name + ' ' + resolve._trace());
+            }
+        }
+
         callbacks.push(callback);
 
         if(started++){
             return;
         }
 
-        function resolveWithDependencies(error, argResults){
-            if(error){
-                return callbacks.forEach(function(callback){
-                    callback(error);
-                });
-            }
-
-            argResults = [].concat.apply([], argResults);
-
-            argResults.push(function(){
-                results = arguments;
-                callbacks.forEach(function(callback){
-                    callback.apply(context, results);
-                });
+        var complete = resolveWithDependencies.bind([fn, callbacks, context], function(resolvedResults){
+                results = resolvedResults;
             });
 
-            fn.apply(null, argResults);
-        }
-
-        foreign.parallel(resolveDependency, args, resolveWithDependencies);
+        nextTick(resolveDependencies.bind(null, args, complete, resolveDependency));
     };
 
     resolve.get = get.bind(resolve);
     resolve.resolve = resolve;
+
+    if(righto._debug){
+        addTracing(resolve, fn, args);
+    }
 
     return resolve;
 }

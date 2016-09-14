@@ -449,15 +449,13 @@ test('righto.from(value)', function(t){
 test('no callback', function(t){
     t.plan(1);
 
-    var didThing,
-        doThing = righto(function(done){
-            didThing = true;
+    var doThing = righto(function(done){
+            t.pass('Task ran correctly');
             done();
         });
 
     doThing();
 
-    t.equal(didThing, true, 'Task ran correctly');
 });
 
 test('non-function callback', function(t){
@@ -576,9 +574,12 @@ test('errors don\'t get gobbled', function(t){
 
     var stuff = righto(getStuff);
 
-    t.throws(function(){
-        stuff();
+
+    process.once('uncaughtException', function (error) {
+      t.equal(error, "BOOM");
     });
+
+    stuff();
 });
 
 test('surely errors', function(t){
@@ -1000,7 +1001,7 @@ test('sync errors throw', function(t){
 
     var stuff = righto.sync(getStuff);
 
-    process.on('uncaughtException', function (error) {
+    process.once('uncaughtException', function (error) {
       t.equal(error, "BORKED");
     });
 
