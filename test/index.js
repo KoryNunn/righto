@@ -5,6 +5,20 @@ function asyncify(fn){
     setTimeout(fn, Math.random() * 10);
 }
 
+function catchOnce(callback){
+    if(typeof window === 'undefined'){
+        process.once('uncaughtException', callback);
+    }else{
+        window.onerror = function(error){
+            window.onerror = null;
+            callback(error);
+        };
+    }
+}
+var windowError = typeof window !== 'undefined' && 'Script error.';
+
+var globalkeys = Object.keys(global);
+
 test('dependencies', function(t){
     t.plan(7);
 
@@ -449,15 +463,13 @@ test('righto.from(value)', function(t){
 test('no callback', function(t){
     t.plan(1);
 
-    var didThing,
-        doThing = righto(function(done){
-            didThing = true;
+    var doThing = righto(function(done){
+            t.pass('Task ran correctly');
             done();
         });
 
     doThing();
 
-    t.equal(didThing, true, 'Task ran correctly');
 });
 
 test('non-function callback', function(t){
@@ -576,9 +588,11 @@ test('errors don\'t get gobbled', function(t){
 
     var stuff = righto(getStuff);
 
-    t.throws(function(){
-        stuff();
+    catchOnce(function (error) {
+      t.equal(error, windowError || "BOOM");
     });
+
+    stuff();
 });
 
 test('surely errors', function(t){
@@ -1000,8 +1014,8 @@ test('sync errors throw', function(t){
 
     var stuff = righto.sync(getStuff);
 
-    process.on('uncaughtException', function (error) {
-      t.equal(error, "BORKED");
+    catchOnce(function (error) {
+      t.equal(error, windowError || "BORKED");
     });
 
     stuff();

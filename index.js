@@ -1,7 +1,6 @@
-var foreign = require('foreign'),
-    abbott = require('abbott');
+var abbott = require('abbott');
 
-var nextTick = process.nextTick || setTimeout;
+var defer = typeof setImmediate ? setImmediate : nextTick;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -19,9 +18,7 @@ function isTake(x){
     return x && typeof x === 'object' && '__take__' in x;
 }
 
-function slice(list, start, end){
-    return Array.prototype.slice.call(list, start, end);
-}
+var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
 function resolveDependency(task, done){
     if(isThenable(task)){
@@ -175,68 +172,121 @@ function addTracing(resolve, fn, args){
     };
 }
 
-function righto(fn){
-    var args = slice(arguments),
-        fn = args.shift(),
-        context = this,
-        started = 0,
-        callbacks = [],
-        results;
+function taskComplete(){
+    var results = arguments;
 
+    this[0](results);
+    this[1].forEach(function(callback){
+        callback.apply(null, results);
+    });
+}
+
+function errorOut(error, callback){
+    callback(error);
+}
+
+function resolveWithDependencies(callbacks, done, error, argResults){
+    var fn = this;
+
+    if(error){
+        return callbacks.forEach(errorOut.bind(null, error));
+    }
+
+    var args = [].concat.apply([], argResults),
+        complete = taskComplete.bind([done, callbacks]);
+
+    // Slight perf bump by avoiding apply for simple cases.
+    switch(args.length){
+        case 0: fn(complete); break;
+        case 1: fn(args[0], complete); break;
+        case 2: fn(args[0], args[1], complete); break;
+        default:
+            args.push(complete);
+            fn.apply(null, args);
+    }
+}
+
+function resolveDependencies(args, complete, resolveDependency){
+    var results = [],
+        done = 0,
+        hasErrored;
+
+    if(!args.length){
+        complete(null, []);
+    }
+
+    function dependencyResolved(index, error, result){
+        if(hasErrored){
+            return;
+        }
+
+        if(error){
+            hasErrored = true;
+            return complete(error);
+        }
+
+        results[index] = result;
+
+        if(++done === args.length){
+            complete(null, results);
+        }
+    }
+
+    args.forEach(function(arg, index){
+        resolveDependency(arg, dependencyResolved.bind(null, index));
+    });
+}
+
+function resolver(callback){
+    var context = this,
+        complete = callback;
+
+    // No callback? Just run the task.
+    if(!arguments.length){
+        complete = noOp;
+    }
+
+    if(typeof complete !== 'function'){
+        throw new Error('Callback must be a function');
+    }
+
+    if(context.results){
+        return complete.apply(null, context.results);
+    }
+
+    if(righto._debug){
+        if(righto._autotrace || resolve._traceOnExecute){
+            console.log('Executing ' + context.fn.name + ' ' + resolve._trace());
+        }
+    }
+
+    context.callbacks.push(complete);
+
+    if(this.started++){
+        return;
+    }
+
+    var complete = resolveWithDependencies.bind(context.fn, context.callbacks, function(resolvedResults){
+            context.results = resolvedResults;
+        });
+
+    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency));
+};
+
+function righto(){
+    var args = slice(arguments),
+        fn = args.shift();
 
     if(typeof fn !== 'function'){
         throw new Error('No task function passed to righto');
     }
 
-    function resolve(callback){
-
-        // No callback? Just run the task.
-        if(!arguments.length){
-            callback = noOp;
-        }
-
-        if(typeof callback !== 'function'){
-            throw new Error('Callback must be a function');
-        }
-
-        if(results){
-            return callback.apply(context, results);
-        }
-
-        if(righto._debug){
-            if(righto._autotrace || resolve._traceOnExecute){
-                console.log('Executing ' + fn.name + ' ' + resolve._trace());
-            }
-        }
-
-        callbacks.push(callback);
-
-        if(started++){
-            return;
-        }
-
-        function resolveWithDependencies(error, argResults){
-            if(error){
-                return callbacks.forEach(function(callback){
-                    callback(error);
-                });
-            }
-
-            argResults = [].concat.apply([], argResults);
-
-            argResults.push(function(){
-                results = arguments;
-                callbacks.forEach(function(callback){
-                    callback.apply(context, results);
-                });
-            });
-
-            fn.apply(null, argResults);
-        }
-
-        foreign.parallel(resolveDependency, args, resolveWithDependencies);
-    };
-
+    var resolve = resolver.bind({
+        fn: fn,
+        callbacks: [],
+        args: args,
+        started: 0
+    });
     resolve.get = get.bind(resolve);
     resolve.resolve = resolve;
 
@@ -252,13 +302,14 @@ righto.sync = function(fn){
         var args = slice(arguments),
             done = args.pop();
 
-        nextTick(function(){
+        defer(function(){
             done(null, fn.apply(null, args));
         });
     }].concat(slice(arguments, 1)));
 };
 
-righto.all = function(task){
+righto.all = function(value){
+    var task = value;
     if(arguments.length > 1){
         task = slice(arguments);
     }
