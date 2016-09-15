@@ -255,8 +255,8 @@ function resolver(callback){
     }
 
     if(righto._debug){
-        if(righto._autotrace || resolve._traceOnExecute){
-            console.log('Executing ' + context.fn.name + ' ' + resolve._trace());
+        if(righto._autotrace || this.resolve._traceOnExecute){
+            console.log('Executing ' + context.fn.name + ' ' + this.resolve._trace());
         }
     }
 
@@ -281,13 +281,15 @@ function righto(){
         throw new Error('No task function passed to righto');
     }
 
-    var resolve = resolver.bind({
-        fn: fn,
-        callbacks: [],
-        args: args,
-        started: 0
-    });
+    var resolverContext = {
+            fn: fn,
+            callbacks: [],
+            args: args,
+            started: 0
+        },
+        resolve = resolver.bind(resolverContext);
     resolve.get = get.bind(resolve);
+    resolverContext.resolve = resolve;
     resolve.resolve = resolve;
 
     if(righto._debug){
