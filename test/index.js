@@ -5,6 +5,18 @@ function asyncify(fn){
     setTimeout(fn, Math.random() * 10);
 }
 
+function catchOnce(callback){
+    if(typeof window === 'undefined'){
+        process.once('uncaughtException', callback);
+    }else{
+        window.onerror = function(error){
+            window.onerror = null;
+            callback(error);
+        };
+    }
+}
+var windowError = typeof window !== 'undefined' && 'Script error.';
+
 test('dependencies', function(t){
     t.plan(7);
 
@@ -574,9 +586,8 @@ test('errors don\'t get gobbled', function(t){
 
     var stuff = righto(getStuff);
 
-
-    process.once('uncaughtException', function (error) {
-      t.equal(error, "BOOM");
+    catchOnce(function (error) {
+      t.equal(error, windowError || "BOOM");
     });
 
     stuff();
@@ -1001,8 +1012,8 @@ test('sync errors throw', function(t){
 
     var stuff = righto.sync(getStuff);
 
-    process.once('uncaughtException', function (error) {
-      t.equal(error, "BORKED");
+    catchOnce(function (error) {
+      t.equal(error, windowError || "BORKED");
     });
 
     stuff();
