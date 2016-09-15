@@ -1,6 +1,6 @@
 var abbott = require('abbott');
 
-var nextTick = process.nextTick || setTimeout;
+var defer = typeof setImmediate ? setImmediate : nextTick;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -173,11 +173,11 @@ function addTracing(resolve, fn, args){
 }
 
 function taskComplete(){
-    var context = this[2],
-        results = arguments;
+    var results = arguments;
+
     this[0](results);
     this[1].forEach(function(callback){
-        callback.apply(context, results);
+        callback.apply(null, results);
     });
 }
 
@@ -185,20 +185,25 @@ function errorOut(error, callback){
     callback(error);
 }
 
-function resolveWithDependencies(done, error, argResults){
-    var fn = this[0],
-        callbacks = this[1],
-        context = this[2];
+function resolveWithDependencies(callbacks, done, error, argResults){
+    var fn = this;
 
     if(error){
         return callbacks.forEach(errorOut.bind(null, error));
     }
 
-    var args = [].concat.apply([], argResults);
+    var args = [].concat.apply([], argResults),
+        complete = taskComplete.bind([done, callbacks]);
 
-    args.push(taskComplete.bind([done, callbacks, context]));
-
-    fn.apply(null, args);
+    // Slight perf bump by avoiding apply for simple cases.
+    switch(args.length){
+        case 0: fn(complete); break;
+        case 1: fn(args[0], complete); break;
+        case 2: fn(args[0], args[1], complete); break;
+        default:
+            args.push(complete);
+            fn.apply(null, args);
+    }
 }
 
 function resolveDependencies(args, complete, resolveDependency){
@@ -232,52 +237,56 @@ function resolveDependencies(args, complete, resolveDependency){
     });
 }
 
-function righto(fn){
+function resolver(callback){
+    var context = this,
+        complete = callback;
+
+    // No callback? Just run the task.
+    if(!arguments.length){
+        complete = noOp;
+    }
+
+    if(typeof complete !== 'function'){
+        throw new Error('Callback must be a function');
+    }
+
+    if(context.results){
+        return complete.apply(null, context.results);
+    }
+
+    if(righto._debug){
+        if(righto._autotrace || resolve._traceOnExecute){
+            console.log('Executing ' + context.fn.name + ' ' + resolve._trace());
+        }
+    }
+
+    context.callbacks.push(complete);
+
+    if(this.started++){
+        return;
+    }
+
+    var complete = resolveWithDependencies.bind(context.fn, context.callbacks, function(resolvedResults){
+            context.results = resolvedResults;
+        });
+
+    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency));
+};
+
+function righto(){
     var args = slice(arguments),
-        fn = args.shift(),
-        context = this,
-        started = 0,
-        callbacks = [],
-        results;
+        fn = args.shift();
 
     if(typeof fn !== 'function'){
         throw new Error('No task function passed to righto');
     }
 
-    function resolve(callback){
-
-        // No callback? Just run the task.
-        if(!arguments.length){
-            callback = noOp;
-        }
-
-        if(typeof callback !== 'function'){
-            throw new Error('Callback must be a function');
-        }
-
-        if(results){
-            return callback.apply(context, results);
-        }
-
-        if(righto._debug){
-            if(righto._autotrace || resolve._traceOnExecute){
-                console.log('Executing ' + fn.name + ' ' + resolve._trace());
-            }
-        }
-
-        callbacks.push(callback);
-
-        if(started++){
-            return;
-        }
-
-        var complete = resolveWithDependencies.bind([fn, callbacks, context], function(resolvedResults){
-                results = resolvedResults;
-            });
-
-        nextTick(resolveDependencies.bind(null, args, complete, resolveDependency));
-    };
-
+    var resolve = resolver.bind({
+        fn: fn,
+        callbacks: [],
+        args: args,
+        started: 0
+    });
     resolve.get = get.bind(resolve);
     resolve.resolve = resolve;
 
@@ -293,13 +302,14 @@ righto.sync = function(fn){
         var args = slice(arguments),
             done = args.pop();
 
-        nextTick(function(){
+        defer(function(){
             done(null, fn.apply(null, args));
         });
     }].concat(slice(arguments, 1)));
 };
 
-righto.all = function(task){
+righto.all = function(value){
+    var task = value;
     if(arguments.length > 1){
         task = slice(arguments);
     }

@@ -17,6 +17,8 @@ function catchOnce(callback){
 }
 var windowError = typeof window !== 'undefined' && 'Script error.';
 
+var globalkeys = Object.keys(global);
+
 test('dependencies', function(t){
     t.plan(7);
 
