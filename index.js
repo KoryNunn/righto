@@ -200,7 +200,7 @@ function taskComplete(error){
 function errorOut(error, callback){
     if(error && righto._debug){
         if(righto._autotraceOnError || this.resolve._traceOnError){
-            console.log('Dependancy error executing ' + this.fn.name + ' ' + this.resolve._trace());
+            console.log('Dependency error executing ' + this.fn.name + ' ' + this.resolve._trace());
         }
     }
 

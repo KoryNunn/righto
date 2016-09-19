@@ -118,7 +118,7 @@ generated(function(error, result){
 
 ## Errors
 
-Errors bubble up through tasks, so if a dependancy errors, the task errors.
+Errors bubble up through tasks, so if a dependency errors, the task errors.
 
 ```javascript
 
@@ -151,7 +151,7 @@ getBar(function(error, result){
 
 ## Take / Multiple results
 
-By default, dependant tasks are passed only the first result of a dependency `righto`. eg:
+By default, dependent tasks are passed only the first result of a dependency `righto`. eg:
 
 ```javascript
 function foo(callback){
@@ -176,7 +176,7 @@ getBar(function(error, result){
 });
 ```
 
-But you can pick and choose what results are used from a dependancy like so:
+But you can pick and choose what results are used from a dependency like so:
 
 ```javascript
 // foo() and bar() as defined above...
@@ -488,6 +488,25 @@ something (.../index.js:1034:13)
         - argument "b" from taskB (.../index.js:1022:13)
             - argument "a" from taskA (.../index.js:1016:13)
 
+```
+
+You can also tell righto to print a graph trace, highlighting the offending task, when a graph rejects.
+
+Either per-righto:
+
+```
+var task = righto(fn, dep, dep, dep...);
+
+task._traceOnError = true;
+
+task();
+// Logs...
+```
+
+Or globally:
+
+```
+righto._autotraceOnError = true;
 ```
 
 ## NOTE:
