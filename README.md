@@ -509,6 +509,10 @@ Or globally:
 righto._autotraceOnError = true;
 ```
 
+Which print handy traces like this one: 
+
+![righto graph trace](https://korynunn.files.wordpress.com/2016/09/debug.png?w=680)
+
 ## NOTE:
 
 Only rightos that were instantiated **after** setting the debug flag will support tracing.
