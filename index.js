@@ -142,6 +142,12 @@ function addTracing(resolve, fn, args){
 
     resolve._stack = new Error().stack;
     resolve._trace = function(tabs){
+        var firstLine = getCallLine(resolve._stack);
+
+        if(resolve._error){
+            firstLine = '\u001b[31m' + firstLine + ' <- ERROR SOURCE' +  '\u001b[39m';
+        }
+
         tabs = tabs || 0;
         var spacing = '    ';
         for(var i = 0; i < tabs; i ++){
@@ -159,50 +165,66 @@ function addTracing(resolve, fn, args){
 
             if(isRighto(arg)){
                 var line = spacing + '- argument "' + argName + '" from ';
+
+
                 if(!arg._trace){
-                    results.push(line + 'Tracing was not enabled for this righto instance.');
+                    line = line + 'Tracing was not enabled for this righto instance.';
                 }else{
-                    results.push(line + arg._trace(tabs + 1));
+                    line = line + arg._trace(tabs + 1);
                 }
+                results.push(line);
             }
 
             return results;
-        }, [getCallLine(resolve._stack)])
+        }, [firstLine])
         .join('\n');
     };
 }
 
-function taskComplete(){
+function taskComplete(error){
+    var done = this[0],
+        context = this[1];
+
+    if(error && righto._debug){
+        context.resolve._error = error;
+    }
+
     var results = arguments;
 
-    this[0](results);
-    this[1].forEach(function(callback){
+    done(results);
+    context.callbacks.forEach(function(callback){
         callback.apply(null, results);
     });
 }
 
 function errorOut(error, callback){
+    if(error && righto._debug){
+        if(righto._autotraceOnError || this.resolve._traceOnError){
+            console.log('Dependancy error executing ' + this.fn.name + ' ' + this.resolve._trace());
+        }
+    }
+
     callback(error);
 }
 
-function resolveWithDependencies(callbacks, done, error, argResults){
-    var fn = this;
+function resolveWithDependencies(done, error, argResults){
+    var context = this;
 
     if(error){
-        return callbacks.forEach(errorOut.bind(null, error));
+        return context.callbacks.forEach(errorOut.bind(context, error));
     }
 
     var args = [].concat.apply([], argResults),
-        complete = taskComplete.bind([done, callbacks]);
+        complete = taskComplete.bind([done, context]);
 
     // Slight perf bump by avoiding apply for simple cases.
     switch(args.length){
-        case 0: fn(complete); break;
-        case 1: fn(args[0], complete); break;
-        case 2: fn(args[0], args[1], complete); break;
+        case 0: context.fn(complete); break;
+        case 1: context.fn(args[0], complete); break;
+        case 2: context.fn(args[0], args[1], complete); break;
         default:
             args.push(complete);
-            fn.apply(null, args);
+            context.fn.apply(null, args);
     }
 }
 
@@ -266,7 +288,7 @@ function resolver(callback){
         return;
     }
 
-    var complete = resolveWithDependencies.bind(context.fn, context.callbacks, function(resolvedResults){
+    var complete = resolveWithDependencies.bind(context, function(resolvedResults){
             context.results = resolvedResults;
         });
 

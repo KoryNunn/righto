@@ -1,4 +1,5 @@
 var test = require('tape'),
+    consoleWatch = require('console-watch');
     righto = require('../');
 
 function asyncify(fn){
@@ -1053,7 +1054,45 @@ test('call tracing', function(t){
 
     var trace = d._trace();
 
-    console.log(trace);
-
     t.equal(trace.split(/\n/g).length, 7);
+});
+
+test('error tracing', function(t){
+    t.plan(2);
+
+    righto._debug = true;
+    righto._autotraceOnError = true;
+
+    var a = righto(function(callback){
+            asyncify(function(){
+                callback(null, 'a');
+            });
+        });
+
+    var b = righto(function(a, callback){
+            asyncify(function(){
+                callback(null, 'b');
+            });
+        }, a);
+
+    var c = righto(function(a, b, callback){
+            asyncify(function(){
+                callback('BOOM', 'c');
+            });
+        }, a, b);
+
+    var d = righto(function(b, c, callback){
+            asyncify(function(){
+                callback(null, 'c');
+            });
+        }, b, c);
+
+    consoleWatch(function(getResults){
+        d(function(){
+            var trace = getResults().log[0];
+
+            t.equal(trace.split(/\n/g).length, 7);
+            t.ok(~trace.indexOf('ERROR SOURCE'));
+        });
+    });
 });
