@@ -63,7 +63,8 @@ function get(fn){
         if(typeof fn === 'string'){
             return done(null, result[fn]);
         }
-        done(null, fn(result));
+
+        righto.from(fn(result))(done);
     }, this, fn);
 }
 

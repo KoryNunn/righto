@@ -1096,3 +1096,27 @@ test('error tracing', function(t){
         });
     });
 });
+
+test('get returning a righto', function(t){
+    t.plan(1);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    function doStuff(x, callback){
+        asyncify(function(){
+            callback(null, x*2);
+        });
+    }
+
+    var x = righto(getThingos)
+        .get(x => x.map(y => righto(doStuff, y)))
+        .get(righto.all);
+
+    x(function(error, results){
+        t.deepEqual(results, [2, 4, 6, 8, 10]);
+    });
+});

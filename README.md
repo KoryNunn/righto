@@ -296,7 +296,7 @@ var righto2 = righto(function(value, done){
 righto2();
 ```
 
-## Subkeys
+## Get
 
 You can create a new `righto` that resolves the key/runs a function on a result like so:
 
@@ -509,7 +509,7 @@ Or globally:
 righto._autotraceOnError = true;
 ```
 
-Which print handy traces like this one: 
+Which print handy traces like this one:
 
 ![righto graph trace](https://korynunn.files.wordpress.com/2016/09/debug.png?w=680)
 
