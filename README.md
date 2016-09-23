@@ -355,6 +355,51 @@ z();
 
 ```
 
+## Handle
+
+Wrap a righto task with a handler that either forwards the successful result, or
+sends the rejected error through a handler to resolve the task.
+
+```
+function mightFail(callback){
+    if(Math.random() > 0.5){
+        callback('borked');
+    }else{
+        callback(null, 'result');
+    }
+};
+
+function defaultString(error, callback){
+    callback(null, '');
+}
+
+var maybeAString = righto(mightFail),
+    aString = righto.handle(maybeAString, defaultString);
+
+aString(function(error, result){
+    typeof result === 'string'.
+});
+```
+
+This can also be used to pass custom error results:
+
+```
+function nullOnNoent(error, callback){
+    if(error.code === 'ENOENT'){
+        return callback();
+    }
+
+    return callback(error);
+}
+
+var aFile = righto(fs.readFile, 'someFilePath.txt, 'utf8'),
+    aFileOrNull = righto.handle(aFile, nullOnNoent);
+
+aFile(function(error, result){
+    If the file isnt found, error && result will be null
+});
+```
+
 ## Possible rightos: righto.from(anything)
 
 Any value can be turned into a righto using righto.from();
