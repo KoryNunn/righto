@@ -439,6 +439,18 @@ righto.surely = function(task){
     });
 };
 
+righto.handle = function(task, handler){
+    return righto(function(handler, done){
+        task(function(error){
+            if(!error){
+                return task(done);
+            }
+
+            handler(error, done);
+        });
+    }, handler);
+};
+
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){
         throw new Error('This environment does not support Proxy\'s');

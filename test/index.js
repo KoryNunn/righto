@@ -1120,3 +1120,31 @@ test('get returning a righto', function(t){
         t.deepEqual(results, [2, 4, 6, 8, 10]);
     });
 });
+
+test('handle', function(t){
+    t.plan(1);
+
+    function doX(callback){
+        asyncify(function(){
+            callback('borked');
+        });
+    };
+
+    function doY(x, callback){
+        asyncify(function(){
+            callback(null, x*2);
+        });
+    }
+
+    function defaultZero(error, done){
+        done(null, 0);
+    }
+
+    var x = righto(doX),
+        handledX = righto.handle(x, defaultZero),
+        y = righto(doY, handledX);
+
+    y(function(error, result){
+        t.equal(result, 0);
+    });
+});
