@@ -61,7 +61,7 @@ test('dependencies', function(t){
 
 });
 
-test('ignored deps', function(t){
+test('ignored deps - DEPRECATED', function(t){
     t.plan(2);
 
     function bar(callback){
@@ -139,7 +139,7 @@ test('ignored deps with after', function(t){
 
 });
 
-test('multiple deps', function(t){
+test('multiple deps - DEPRECATED', function(t){
     t.plan(2);
 
     function bar(callback){
@@ -534,7 +534,7 @@ test('mate ignored', function(t){
 
     var otherStuff = righto(getOtherStuff);
 
-    var stuffAfterOtherStuff = righto.mate(stuff, [otherStuff]);
+    var stuffAfterOtherStuff = righto.mate(stuff, righto.after(otherStuff));
 
     stuffAfterOtherStuff(function(error, stuff, shouldBeUndefined){
         t.notOk(error);
@@ -554,7 +554,7 @@ test('mate ignored only', function(t){
 
     var stuff = righto(getStuff);
 
-    var ignoredStuff = righto.mate([stuff]);
+    var ignoredStuff = righto.mate(righto.after(stuff));
 
     ignoredStuff(function(error){
         t.equal(arguments.length, 1);
@@ -572,7 +572,7 @@ test('mate ignored error', function(t){
 
     var stuff = righto(getStuff);
 
-    var ignoredStuff = righto.mate([stuff]);
+    var ignoredStuff = righto.mate(righto.after(stuff));
 
     ignoredStuff(function(error){
         t.equal(arguments.length, 1);
@@ -1093,6 +1093,8 @@ test('error tracing', function(t){
 
             t.equal(trace.split(/\n/g).length, 7);
             t.ok(~trace.indexOf('ERROR SOURCE'));
+
+            righto._debug = false;
         });
     });
 });
@@ -1146,5 +1148,57 @@ test('handle', function(t){
 
     y(function(error, result){
         t.equal(result, 0);
+    });
+});
+
+test('generators with handle success', function(t){
+    t.plan(2);
+
+    function eventuallyX(done){
+        asyncify(function(){
+            done(null, 5);
+        });
+    }
+
+    function handleXErrors(error, done){
+        done('Usefull error');
+    }
+
+    var generated = righto.iterate(function*(reject){
+
+        var x = yield righto.handle(righto(eventuallyX), handleXErrors);
+
+        return x;
+    });
+
+    generated(function(error, result){
+        t.notOk(error);
+        t.equal(result, 5);
+    });
+});
+
+test('generators with handle error', function(t){
+    t.plan(2);
+
+    function eventuallyX(done){
+        asyncify(function(){
+            done('Useless error');
+        });
+    }
+
+    function handleXErrors(error, done){
+        done('Usefull error');
+    }
+
+    var generated = righto.iterate(function*(reject){
+
+        var x = yield righto.handle(righto(eventuallyX), handleXErrors);
+
+        return x;
+    });
+
+    generated(function(error, result){
+        t.notOk(result);
+        t.equal(error, 'Usefull error');
     });
 });
