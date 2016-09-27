@@ -1202,3 +1202,30 @@ test('generators with handle error', function(t){
         t.equal(error, 'Usefull error');
     });
 });
+
+test('get returning an array of exactly 1 righto', function(t){
+    t.plan(2);
+
+    var stuff = righto(function(done){
+            asyncify(function(){
+                done(null, [{
+                    name: 'foo'
+                }]);
+            });
+        });
+
+    function transformItem(item, callback){
+        item.name = item.name + 'bar';
+
+        callback(null, item);
+    }
+
+    var things = righto.all(stuff.get(items => items.map(item => righto(transformItem, item))));
+
+    things(function(error, results){
+        t.notOk(error);
+        t.deepEqual(results, [{
+            name: 'foobar'
+        }]);
+    });
+});
