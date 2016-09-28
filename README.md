@@ -272,6 +272,18 @@ syncTask(function(error, result){
 
 ```
 
+## From
+
+Anything can be converted to a righto with righto.from(anything);
+
+```
+righto.from(someRighto); // Returns someRighto
+righto.from(somePromise); // Returns a new righto that resolves the promise
+righto.from(5); // Returns a new righto that resolves 5
+righto.from(createARighto, args...); // Calls createARighto with args..., and then returns a new righto that resolves the result
+righto.from(createAPromise, args...); // Calls createAPromise with args..., and then returns a new righto that resolves the result
+```
+
 ## Value (passing resolveables as unresolved arguments)
 
 Sometimes it may be required to pass a resolveable (a righto, or promise) without as an argument,

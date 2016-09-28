@@ -374,6 +374,10 @@ righto.from = function(value){
         return value;
     }
 
+    if(!isResolveable(value) && typeof value === 'function'){
+        value = value.apply(null, slice(arguments, 1));
+    }
+
     return righto.sync(function(resolved){
         return resolved;
     }, value);

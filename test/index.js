@@ -1161,3 +1161,27 @@ test('get returning an array of exactly 1 righto', function(t){
         }]);
     });
 });
+
+test('from tasks that return eventuals', function(t){
+    t.plan(2);
+
+    function makeRighto(a){
+        return righto(function(done){
+            done(null, a);
+        });
+    }
+
+    function makePromise(a){
+        return new Promise(function(resolve){
+            resolve(a);
+        });
+    }
+
+    var x = righto.from(makeRighto, 5),
+        y = righto.from(makeRighto, 10);
+
+    righto.mate(x, y)(function(error, x, y){
+        t.equal(x, 5);
+        t.equal(y, 10);
+    });
+});
