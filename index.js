@@ -21,7 +21,14 @@ function isTake(x){
 var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
 function getCallLine(stack){
-    return stack.split('\n')[3].match(/at (.*)/)[1];
+    var index = 0,
+        lines = stack.split('\n');
+
+    while(lines[++index] && lines[index].match(/righto\/index\.js/)){}
+
+    var match = lines[index] && lines[index].match(/at (.*)/);
+
+    return match ? match[1] : ' - No trace - ';
 }
 
 function resolveDependency(task, done){
@@ -58,7 +65,8 @@ function resolveDependency(task, done){
         isRighto(task[0]) &&
         !isRighto(task[1])
     ){
-        console.warn('Possible unsupported take/ignore syntax detected:\n' + getCallLine(this._stack));
+
+        console.warn('\u001b[33mPossible unsupported take/ignore syntax detected:\u001b[39m\n' + getCallLine(this._stack));
     }
 
     if(isTake(task)){
