@@ -20,6 +20,10 @@ function isTake(x){
 
 var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
+function getCallLine(stack){
+    return stack.split('\n')[3].match(/at (.*)/)[1];
+}
+
 function resolveDependency(task, done){
     if(isThenable(task)){
         task = righto(abbott(task));
@@ -47,8 +51,14 @@ function resolveDependency(task, done){
         });
     }
 
-    if(Array.isArray(task) && isRighto(task[0]) && !isRighto(task[1])){
-        return take.apply(null, task);
+    if(
+        righto._debug &&
+        righto._warnOnUnsupported &&
+        Array.isArray(task) &&
+        isRighto(task[0]) &&
+        !isRighto(task[1])
+    ){
+        console.warn('Possible unsupported take/ignore syntax detected:\n' + getCallLine(this._stack));
     }
 
     if(isTake(task)){
@@ -134,9 +144,6 @@ function resolveIterator(fn){
 }
 
 function addTracing(resolve, fn, args){
-    function getCallLine(stack){
-        return stack.split('\n')[3].match(/at (.*)/)[1];
-    }
 
     var argMatch = fn.toString().match(/^[\w\s]*?\(((?:\w+[,\s]*?)*)\)/),
         argNames = argMatch ? argMatch[1].split(/[,\s]+/g) : [];
@@ -293,7 +300,7 @@ function resolver(callback){
             context.results = resolvedResults;
         });
 
-    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency));
+    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency.bind(this.resolve)));
 };
 
 function righto(){

@@ -561,3 +561,24 @@ Which print handy traces like this one:
 ## NOTE:
 
 Only rightos that were instantiated **after** setting the debug flag will support tracing.
+
+
+## Unsupported from v1.
+
+The take/ignore syntax that used a single righto within an array has been deprecated
+due to it having been a bad idea that I should never have implemented to begin with.
+
+This syntax was deprecated a few v1 versions ago, so you can get a console.warn for potential usages
+of the syntax by turning on _debug mode and _warnOnUnsupported:
+
+```
+righto._debug = true;
+righto._warnOnUnsupported = true;
+
+... code ...
+
+var getFoo = righto(foo, [getBar]); // <- the unsupported syntax
+
+getFoo( ... ); // -> console.warn()'s the line number where it was used.
+
+```
