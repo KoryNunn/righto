@@ -1,6 +1,6 @@
 var abbott = require('abbott');
 
-var defer = typeof setImmediate ? setImmediate : nextTick;
+var defer = typeof setImmediate !== 'undefined' ? setImmediate : setTimeout;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
