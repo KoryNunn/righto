@@ -428,7 +428,7 @@ righto.resolve = function(object, deep){
         return pairs.reduce(function(result, pair){
             result[pair[0]] = pair[1];
             return result;
-        }, {});
+        }, Array.isArray(object) ? [] : {});
     }, pairs);
 };
 

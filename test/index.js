@@ -659,6 +659,23 @@ test('resolve deep', function(t){
     });
 });
 
+test('resolve array', function(t){
+    t.plan(2);
+
+    var foo = righto(function(callback){
+        asyncify(function(){
+            callback(null, 'foo');
+        });
+    });
+
+    var bar = righto.resolve([foo]);
+
+    bar(function(error, bar){
+        t.ok(Array.isArray(bar));
+        t.equal(bar[0], 'foo');
+    });
+});
+
 test('resolve null', function(t){
     t.plan(1);
 
