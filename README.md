@@ -518,6 +518,29 @@ foo.bar.baz(function(error, baz){
 });
 ```
 
+## isRighto, isThenable, isResolveable
+
+Use these methods to check if something is a righto, a thenable, or resolveable (either righto or thenable);
+
+```
+
+var rigthoA = righto(function(done){
+    done(null, 1);
+});
+
+var promiseB = new Promise(function(resolve, reject){
+    resolve(null, 2);
+});
+
+righto.isRighto(rigthoA); -> true
+righto.isRighto(promiseB); -> false
+righto.isThenable(rigthoA); -> false
+righto.isThenable(promiseB); -> true
+righto.isResolveable(rigthoA); -> true
+righto.isResolveable(promiseB); -> true
+
+```
+
 # Tracing
 
 You can get a trace of where a righto went to resolve its dependencies by setting:

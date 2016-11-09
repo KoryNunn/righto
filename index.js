@@ -470,6 +470,10 @@ righto.handle = function(task, handler){
     }, handler);
 };
 
+righto.isRighto = isRighto;
+righto.isThenable = isThenable;
+righto.isResolveable = isResolveable;
+
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){
         throw new Error('This environment does not support Proxy\'s');

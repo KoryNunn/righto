@@ -1202,3 +1202,25 @@ test('from tasks that return eventuals', function(t){
         t.equal(y, 10);
     });
 });
+
+test('isRighto', function(t){
+    t.plan(9);
+
+    var rigthoA = righto(function(done){
+        done(null, 1);
+    });
+    var promiseB = new Promise(function(resolve, reject){
+        resolve(null, 2);
+    });
+
+    t.ok(righto.isRighto(rigthoA), 'rigthoA is righto');
+    t.notOk(righto.isRighto(promiseB), 'promiseB is not a righto');
+    t.notOk(righto.isThenable(rigthoA), 'rigthoA is not a thenable');
+    t.ok(righto.isThenable(promiseB), 'promiseB is thenable');
+    t.ok(righto.isResolveable(rigthoA), 'rigthoA is resolveable');
+    t.ok(righto.isResolveable(promiseB), 'promiseB is resolveable');
+
+    t.notOk(righto.isRighto(null), 'null is not a righto');
+    t.notOk(righto.isThenable(null), 'null is not a thenable');
+    t.notOk(righto.isResolveable(null), 'null is not a resolveable');
+});
