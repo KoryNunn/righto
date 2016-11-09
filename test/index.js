@@ -1217,10 +1217,10 @@ test('isRighto', function(t){
     t.notOk(righto.isRighto(promiseB), 'promiseB is not a righto');
     t.notOk(righto.isThenable(rigthoA), 'rigthoA is not a thenable');
     t.ok(righto.isThenable(promiseB), 'promiseB is thenable');
-    t.ok(righto.isResolveable(rigthoA), 'rigthoA is resolveable');
-    t.ok(righto.isResolveable(promiseB), 'promiseB is resolveable');
+    t.ok(righto.isResolvable(rigthoA), 'rigthoA is resolvable');
+    t.ok(righto.isResolvable(promiseB), 'promiseB is resolvable');
 
     t.notOk(righto.isRighto(null), 'null is not a righto');
     t.notOk(righto.isThenable(null), 'null is not a thenable');
-    t.notOk(righto.isResolveable(null), 'null is not a resolveable');
+    t.notOk(righto.isResolvable(null), 'null is not a resolvable');
 });

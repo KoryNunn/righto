@@ -10,7 +10,7 @@ function isThenable(x){
     return x && typeof x.then === 'function';
 }
 
-function isResolveable(x){
+function isResolvable(x){
     return isRighto(x) || isThenable(x);
 }
 
@@ -132,7 +132,7 @@ function resolveIterator(fn){
                 }
                 return callback(null, next.value);
             }
-            if(isResolveable(next.value)){
+            if(isResolvable(next.value)){
                 righto.sync(function(value){
                     lastValue = value;
                     run();
@@ -374,7 +374,7 @@ righto.from = function(value){
         return value;
     }
 
-    if(!isResolveable(value) && typeof value === 'function'){
+    if(!isResolvable(value) && typeof value === 'function'){
         value = value.apply(null, slice(arguments, 1));
     }
 
@@ -447,7 +447,7 @@ righto.value = function(){
 };
 
 righto.surely = function(task){
-    if(!isResolveable(task)){
+    if(!isResolvable(task)){
         task = righto.apply(null, arguments);
     }
 
@@ -472,7 +472,7 @@ righto.handle = function(task, handler){
 
 righto.isRighto = isRighto;
 righto.isThenable = isThenable;
-righto.isResolveable = isResolveable;
+righto.isResolvable = isResolvable;
 
 righto.proxy = function(){
     if(typeof Proxy === 'undefined'){

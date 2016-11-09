@@ -284,9 +284,9 @@ righto.from(createARighto, args...); // Calls createARighto with args..., and th
 righto.from(createAPromise, args...); // Calls createAPromise with args..., and then returns a new righto that resolves the result
 ```
 
-## Value (passing resolveables as unresolved arguments)
+## Value (passing resolvables as unresolved arguments)
 
-Sometimes it may be required to pass a resolveable (a righto, or promise) without as an argument,
+Sometimes it may be required to pass a resolvable (a righto, or promise) without as an argument,
 rather than passing the resolved value of the resolvable. you can do this using `righto.value(resolvable)`
 
 ```javascript
@@ -518,9 +518,9 @@ foo.bar.baz(function(error, baz){
 });
 ```
 
-## isRighto, isThenable, isResolveable
+## isRighto, isThenable, isResolvable
 
-Use these methods to check if something is a righto, a thenable, or resolveable (either righto or thenable);
+Use these methods to check if something is a righto, a thenable, or resolvable (either righto or thenable);
 
 ```
 
@@ -536,8 +536,8 @@ righto.isRighto(rigthoA); -> true
 righto.isRighto(promiseB); -> false
 righto.isThenable(rigthoA); -> false
 righto.isThenable(promiseB); -> true
-righto.isResolveable(rigthoA); -> true
-righto.isResolveable(promiseB); -> true
+righto.isResolvable(rigthoA); -> true
+righto.isResolvable(promiseB); -> true
 
 ```
 
