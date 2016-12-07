@@ -627,6 +627,31 @@ test('proxy support all', function(t){
     t.equal(righto.proxy.all, righto.all);
 });
 
+test('proxy dep', function(t){
+    t.plan(1);
+
+    if(typeof Proxy === 'undefined'){
+        t.pass('Proxy not available');
+        return;
+    }
+
+    function getStuff(callback){
+        callback(null, {foo: 'foo'});
+    }
+
+    var stuff = righto.proxy(getStuff);
+
+    var foo = stuff.foo
+
+    var bar = righto(function(foo, done){
+            done(null, foo)
+        }, foo);
+
+    bar(function(error, bar){
+        t.equal(bar, 'foo');
+    });
+});
+
 test('resolve', function(t){
     t.plan(1);
 

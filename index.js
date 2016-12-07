@@ -7,7 +7,7 @@ function isRighto(x){
 }
 
 function isThenable(x){
-    return x && typeof x.then === 'function';
+    return x && typeof x.then === 'function' && !isRighto(x);
 }
 
 function isResolvable(x){
