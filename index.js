@@ -76,9 +76,18 @@ function resolveDependency(task, done){
     return done(null, [task]);
 }
 
+function traceGet(instance, result){
+    if(righto._debug && !(typeof result === 'object' || typeof result === 'function')){
+        var line = getCallLine(instance._stack);
+        throw new Error('Result of righto was not an instance at: \n' + line);
+    }
+}
+
 function get(fn){
+    var instance = this;
     return righto(function(result, fn, done){
         if(typeof fn === 'string'){
+            traceGet(instance, result);
             return done(null, result[fn]);
         }
 
@@ -95,7 +104,16 @@ function proxy(instance){
                 return instance._;
             }
 
+            if(instance[key] || key in instance || key === 'inspect' || typeof key === 'symbol'){
+                return instance[key];
+            }
+
+            if(righto._debug && key.charAt(0) === '_'){
+                return instance[key];
+            }
+
             return proxy(righto.sync(function(result){
+                traceGet(instance, result);
                 return result[key];
             }, instance));
         }
