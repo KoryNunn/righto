@@ -221,6 +221,14 @@ test('multiple deps reordered with take', function(t){
     });
 });
 
+test('Non resolvable passed to take', function(t){
+    t.plan(1);
+
+    t.throws(function(){
+        righto.take(null, 1);
+    }, 'task was not a resolvable value');
+});
+
 test('multiple deps, default result', function(t){
     t.plan(2);
 
@@ -276,6 +284,14 @@ test('multiple ignored deps with after', function(t){
         t.notOk(error, 'no error');
         t.equal(result, 'dooby', 'Got correct result');
     });
+});
+
+test('Non resolvable passed to after', function(t){
+    t.plan(1);
+
+    t.throws(function(){
+        righto.after(null);
+    }, 'task was not a resolvable value');
 });
 
 test('array dep result', function(t){
