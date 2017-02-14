@@ -407,11 +407,19 @@ righto.mate = function(){
     }].concat(slice(arguments)));
 };
 
-righto.take = function(){
+righto.take = function(task){
+    if(!isResolvable(task)){
+        throw new Error('task was not a resolvable value');
+    }
+
     return {__take__: slice(arguments)};
 };
 
 righto.after = function(task){
+    if(!isResolvable(task)){
+        throw new Error('task was not a resolvable value');
+    }
+
     if(arguments.length === 1){
         return {__take__: [task]};
     }
