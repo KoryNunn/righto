@@ -477,6 +477,22 @@ stuffAndOtherStuff(function(error, stuff, otherStuff){
 });
 ```
 
+## Fail
+
+A shorthand way to provide a failed result.
+
+This is handy for rejecting in .get methods.
+
+```
+var something = someRighto.get(function(value){
+        if(!value){
+            return righto.fail('was falsey');
+        }
+
+        return value;
+    });
+```
+
 ## Proxy support
 
 If you are using righto in an environment that supports proxies, you can use the proxy API:

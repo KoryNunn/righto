@@ -488,6 +488,12 @@ righto.handle = function(task, handler){
     }, handler);
 };
 
+righto.fail = function(error){
+    return righto(function(error, done){
+        done(error);
+    }, error);
+};
+
 righto.isRighto = isRighto;
 righto.isThenable = isThenable;
 righto.isResolvable = isResolvable;

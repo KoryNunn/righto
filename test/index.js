@@ -1295,3 +1295,29 @@ test('isRighto', function(t){
     t.notOk(righto.isThenable(null), 'null is not a thenable');
     t.notOk(righto.isResolvable(null), 'null is not a resolvable');
 });
+
+test('righto.fail', function(t){
+    t.plan(1);
+
+    var falure = righto.fail('reasons');
+
+    falure(function(error){
+        t.equal(error, 'reasons');
+    });
+});
+
+test('righto.fail resolvable', function(t){
+    t.plan(1);
+
+    var eventualFailData = righto(function(done){
+        setTimeout(function(){
+            done(null, 'reasons'); // Return the error in the result, not the rejection.
+        }, 100);
+    });
+
+    var falure = righto.fail(eventualFailData);
+
+    falure(function(error){
+        t.equal(error, 'reasons');
+    });
+});
