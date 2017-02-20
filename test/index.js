@@ -347,6 +347,93 @@ test('righto.all righto deps', function(t){
     });
 });
 
+test('righto.reduce', function(t){
+    t.plan(4);
+
+    var aCalled;
+
+    function a(callback){
+        aCalled = true;
+        t.pass('a called');
+        callback(null, 1);
+    }
+
+    function b(callback){
+        t.ok(aCalled, 'b called after a');
+        callback(null, 2);
+    }
+
+    var result = righto.reduce([a, b]);
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.equal(finalResult, 2, 'Got correct final result');
+    });
+});
+
+test('righto.reduce eventuals', function(t){
+    t.plan(4);
+
+    var aCalled;
+
+    var a = righto(function(callback){
+        aCalled = true;
+        t.pass('a called');
+        callback(null, 1);
+    });
+
+    var b = righto(function(callback){
+        t.ok(aCalled, 'b called after a');
+        callback(null, 2);
+    });
+
+    var result = righto.reduce([a, b]);
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.equal(finalResult, 2, 'Got correct final result');
+    });
+});
+
+test('righto.reduce custom reducer', function(t){
+    t.plan(4);
+
+    var aCalled;
+
+    function a(last, callback){
+        aCalled = true;
+        t.pass('a called');
+        callback(null, last);
+    }
+
+    function b(last, callback){
+        t.ok(aCalled, 'b called after a');
+        callback(null, last + 2);
+    }
+
+    var result = righto.reduce([a, b], function(result, next){
+        return righto(next, result);
+    }, 5);
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.deepEqual(finalResult, 7, 'Got correct final result');
+    });
+});
+
+test('righto.reduce with values custom reducer', function(t){
+    t.plan(2);
+
+    var result = righto.reduce([1, 2, 3], function(result, next){
+        return righto.sync((a) => a + next, result);
+    }, 5);
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.deepEqual(finalResult, 11, 'Got correct final result');
+    });
+});
+
 test('righto().get(key)', function(t){
     t.plan(4);
 

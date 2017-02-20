@@ -247,7 +247,62 @@ all(function(error, results){
     results; // -> ['a','b','c']
 });
 
+## All
+
+righto.reduce takes N tasks, or an Array of tasks as the first argument,
+resolves them from left-to-right, optionally passing the result of the last, and the next task to a reducer.
+
+If no reducer is passed, the tasks will be resolved in series, and the final tasks result will be passed as the result from reduce.
+
+If a reducer is used, a seed can optionally be passed as the third parameter.
+
+No reducer passed:
+```javascript
+function a(callback){
+    aCalled = true;
+    t.pass('a called');
+    callback(null, 1);
+}
+
+function b(callback){
+    t.ok(aCalled, 'b called after a');
+    callback(null, 2);
+}
+
+var result = righto.reduce([a, b]);
+
+result(function(error, finalResult){
+    // finalResult === 2
+});
 ```
+
+With a custom reducer, and seed.
+```
+function a(last, callback){
+    aCalled = true;
+    t.pass('a called');
+    callback(null, last);
+}
+
+function b(last, callback){
+    t.ok(aCalled, 'b called after a');
+    callback(null, last + 2);
+}
+
+// Passes previous eventual result to next reducer call.
+var result = righto.reduce(
+        [a, b],
+        function(result, next){ // Reducer
+            return righto(next, result);
+        },
+        5 // Seed
+    );
+
+result(function(error, finalResult){
+    // finalResult === 7
+});
+```
+
 ## Sync
 
 Synchronous functions can be used to create righto tasks using righto.sync:
