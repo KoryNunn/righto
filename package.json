@@ -7,8 +7,7 @@
   },
   "scripts": {
     "test": "node test",
-    "watchtest": "watchify -d test/index.js -o test/index.browser.js",
-    "watchexample": "linklocal link; watchify -d example/index.js -o example/index.browser.js"
+    "watchtest": "watchify -d test/index.js -o test/index.browser.js"
   },
   "author": "",
   "license": "ISC",

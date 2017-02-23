@@ -327,6 +327,8 @@ function resolver(callback){
         });
 
     defer(resolveDependencies.bind(null, context.args, complete, resolveDependency.bind(this.resolve)));
+
+    return this.resolve;
 };
 
 function righto(){
@@ -388,25 +390,29 @@ righto.all = function(value){
 };
 
 righto.reduce = function(values, reducer, seed){
-    if(!values || !values.reduce){
-        throw new Error('values was not a reduceable object (like an array)');
-    }
+    var hasSeed = arguments.length >= 3;
 
-    values = values.slice();
-
-    if(arguments.length < 3){
-        seed = righto(values.shift());
-    }
-
-    return values.reduce(function(previous, next){
-        if(reducer){
-            return righto(function(previous, done){
-                reducer(previous, next)(done);
-            }, previous);
+    return righto.from(values).get(function(values){
+        if(!values || !values.reduce){
+            throw new Error('values was not a reduceable object (like an array)');
         }
 
-        return righto(done => next(done), righto.after(righto.from(previous)));
-    }, seed);
+        values = values.slice();
+
+        if(!hasSeed){
+            seed = righto(values.shift());
+        }
+
+        return values.reduce(function(previous, next){
+            if(reducer){
+                return righto(function(previous, done){
+                    reducer(previous, next)(done);
+                }, previous);
+            }
+
+            return righto(done => next(done), righto.after(righto.from(previous)));
+        }, seed);
+    });
 };
 
 righto.from = function(value){

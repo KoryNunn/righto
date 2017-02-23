@@ -34,11 +34,11 @@ function createNewUser(userData, callback){
 
     var user = righto(createUser, userData, account); // righto -> error, user.
 
-    var pets = righto.all(userData.pets.map(function(petData){  // righto -> error, [pet...].
-            return righto(createPet, user.get('id'), petData);
-        }));
+    var pets = righto.all(userData.pets.map(petData =>
+            righto(createPet, user.get('id'), petData);
+        ));
 
-    var done = righto.mate(user, [pets]);  // righto -> error, account. (IGNORED [pet...])
+    var done = righto.mate(user, righto.after(pets));  // righto -> error, account. (IGNORED [pet...])
 
     done(callback);
 }

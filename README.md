@@ -149,6 +149,42 @@ getBar(function(error, result){
 });
 ```
 
+## Immediately execute
+
+You can force a righto task for run at any time without dealing with the results (or error) by calling
+it with no arguments:
+
+```
+// Lazily resolve (won't run untill called)
+var something = righto(getSomething);
+
+// Force something to start resolving *now*
+something();
+
+// later ...
+
+something(function(error, result){
+    // handle error or use result.
+});
+
+```
+
+Also, since righto tasks return themselves when called, you can do this a little more shorthand, like so:
+
+
+
+```
+// Immediately force the righto to begin resolving.
+var something = righto(getSomething)(); // <= note the call with no arguments.
+
+// later ...
+
+something(function(error, result){
+    // handle error or use result.
+});
+
+```
+
 ## Take / Multiple results
 
 By default, dependent tasks are passed only the first result of a dependency `righto`. eg:

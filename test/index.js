@@ -1424,3 +1424,25 @@ test('righto.fail resolvable', function(t){
         t.equal(error, 'reasons');
     });
 });
+
+test('righto prerun return', function(t){
+    t.plan(2);
+
+
+    var start = Date.now();
+    var lazyRun = righto(function(done){
+            setTimeout(done, 100, null, true);
+        }),
+        eagerRun = righto(function(done){
+            setTimeout(done, 100, null, true);
+        })(); // call immediately so that it eagerly runs.
+
+    setTimeout(function(){
+        lazyRun(function(){
+            t.ok(Date.now() - start >= 150, 'Result completed in at least 150ms');
+        });
+        eagerRun(function(){
+            t.ok(Date.now() - start < 125, 'Result completed in significantly less than 150ms');
+        });
+    }, 50);
+});

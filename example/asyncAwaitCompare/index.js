@@ -4,19 +4,22 @@ var addTextToPage = require('./addTextToPage');
 
 // Righto version of this: http://jakearchibald.com/2014/es7-async-functions/
 
-var righto = require('../');
+var righto = require('../../');
 
 function loadStory(){
-    var getStory = righto(getJSON, 'story.json'),
-        addHeading = righto.sync(story => addHtmlToPage(story.heading), getStory),
-        addChapters = righto.all(righto.sync(story =>
-            story.chapterURLs.map(chapterUrl => righto(getJSON, chapterUrl))
-            .reduce((result, getChapter) => righto.sync(addHtmlToPage, getChapter, [result]), null)
-        , getStory));
+    var story = righto(getJSON, 'story.json');
 
-    righto.all(addHeading, addChapters)(error => {
+    var headingAdded = story.get(story => addHtmlToPage(story.heading));
+
+    var chaptersAdded = righto.reduce(story.get(story => story.chapterURLs.map(chapterUrl =>
+            righto(getJSON, chapterUrl)().get(addHtmlToPage)
+        )));
+
+    righto.reduce([headingAdded, chaptersAdded])(error => {
+        error ?
+            addTextToPage("Argh, broken: " + error.message) :
+            addTextToPage('All done');
         document.querySelector('.spinner').style.display = 'none';
-        error ? addTextToPage("Argh, broken: " + error.message) : addTextToPage('All done');
     });
 }
 
