@@ -410,7 +410,9 @@ righto.reduce = function(values, reducer, seed){
                 }, previous);
             }
 
-            return righto(done => next(done), righto.after(righto.from(previous)));
+            return righto(function(done){
+                return next(done);
+            }, righto.after(righto.from(previous)));
         }, seed);
     });
 };
