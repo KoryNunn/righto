@@ -16,7 +16,7 @@ righto(task, [argument or righto task])
 
 ## Who's using it?
 
-<img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 80k concurrent users for the early 2017 season.
+<img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 800k concurrent users for the early 2017 season.
 
 <img src="https://securetenant.com.au/images/st-logo4.svg" alt="Secure tenent" height="70px"/> Used everywhere in the backend and frontend of https://securetenant.com.au/
 
