@@ -14,6 +14,12 @@ righto(task, [argument or righto task])
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
+## Who's using it?
+
+<img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 800k concurrent users for the early 2017 season.
+
+<img src="https://securetenant.com.au/images/st-logo4.svg" alt="Secure tenent" height="70px"/> Used everywhere in the backend and frontend of https://securetenant.com.au/
+
 ## example:
 
 async dependencies passed to bar:
@@ -149,42 +155,6 @@ getBar(function(error, result){
 });
 ```
 
-## Immediately execute
-
-You can force a righto task for run at any time without dealing with the results (or error) by calling
-it with no arguments:
-
-```
-// Lazily resolve (won't run untill called)
-var something = righto(getSomething);
-
-// Force something to start resolving *now*
-something();
-
-// later ...
-
-something(function(error, result){
-    // handle error or use result.
-});
-
-```
-
-Also, since righto tasks return themselves when called, you can do this a little more shorthand, like so:
-
-
-
-```
-// Immediately force the righto to begin resolving.
-var something = righto(getSomething)(); // <= note the call with no arguments.
-
-// later ...
-
-something(function(error, result){
-    // handle error or use result.
-});
-
-```
-
 ## Take / Multiple results
 
 By default, dependent tasks are passed only the first result of a dependency `righto`. eg:
@@ -283,62 +253,7 @@ all(function(error, results){
     results; // -> ['a','b','c']
 });
 
-## All
-
-righto.reduce takes N tasks, or an Array of tasks as the first argument,
-resolves them from left-to-right, optionally passing the result of the last, and the next task to a reducer.
-
-If no reducer is passed, the tasks will be resolved in series, and the final tasks result will be passed as the result from reduce.
-
-If a reducer is used, a seed can optionally be passed as the third parameter.
-
-No reducer passed:
-```javascript
-function a(callback){
-    aCalled = true;
-    t.pass('a called');
-    callback(null, 1);
-}
-
-function b(callback){
-    t.ok(aCalled, 'b called after a');
-    callback(null, 2);
-}
-
-var result = righto.reduce([a, b]);
-
-result(function(error, finalResult){
-    // finalResult === 2
-});
 ```
-
-With a custom reducer, and seed.
-```
-function a(last, callback){
-    aCalled = true;
-    t.pass('a called');
-    callback(null, last);
-}
-
-function b(last, callback){
-    t.ok(aCalled, 'b called after a');
-    callback(null, last + 2);
-}
-
-// Passes previous eventual result to next reducer call.
-var result = righto.reduce(
-        [a, b],
-        function(result, next){ // Reducer
-            return righto(next, result);
-        },
-        5 // Seed
-    );
-
-result(function(error, finalResult){
-    // finalResult === 7
-});
-```
-
 ## Sync
 
 Synchronous functions can be used to create righto tasks using righto.sync:
