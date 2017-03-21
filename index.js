@@ -1,6 +1,6 @@
 var abbott = require('abbott');
 
-var defer = typeof setImmediate !== 'undefined' ? setImmediate : setTimeout;
+var defer = typeof nextTick !== 'undefined' ? nextTick : typeof setImmediate !== 'undefined' ? setImmediate : setTimeout;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -217,7 +217,8 @@ function addTracing(resolve, fn, args){
 
 function taskComplete(error){
     var done = this[0],
-        context = this[1];
+        context = this[1],
+        callbacks = context.callbacks;
 
     if(error && righto._debug){
         context.resolve._error = error;
@@ -226,9 +227,10 @@ function taskComplete(error){
     var results = arguments;
 
     done(results);
-    context.callbacks.forEach(function(callback){
-        callback.apply(null, results);
-    });
+
+    for(var i = 0; i < callbacks.length; i++){
+        callbacks[i].apply(null, results);
+    }
 }
 
 function errorOut(error, callback){
@@ -245,7 +247,13 @@ function resolveWithDependencies(done, error, argResults){
     var context = this;
 
     if(error){
-        return context.callbacks.forEach(errorOut.bind(context, error));
+        var boundErrorOut = errorOut.bind(context, error);
+
+        for(var i = 0; i < context.callbacks.length; i++){
+            boundErrorOut(context.callbacks[i]);
+        }
+
+        return;
     }
 
     var args = [].concat.apply([], argResults),
@@ -256,6 +264,7 @@ function resolveWithDependencies(done, error, argResults){
         case 0: context.fn(complete); break;
         case 1: context.fn(args[0], complete); break;
         case 2: context.fn(args[0], args[1], complete); break;
+        case 3: context.fn(args[0], args[1], args[2], complete); break;
         default:
             args.push(complete);
             context.fn.apply(null, args);
@@ -288,9 +297,9 @@ function resolveDependencies(args, complete, resolveDependency){
         }
     }
 
-    args.forEach(function(arg, index){
-        resolveDependency(arg, dependencyResolved.bind(null, index));
-    });
+    for(var i = 0; i < args.length; i++){
+        resolveDependency(args[i], dependencyResolved.bind(null, i));
+    }
 }
 
 function resolver(callback){
@@ -362,9 +371,7 @@ righto.sync = function(fn){
         var args = slice(arguments),
             done = args.pop();
 
-        defer(function(){
-            done(null, fn.apply(null, args));
-        });
+        done(null, fn.apply(null, args));
     }].concat(slice(arguments, 1)));
 };
 

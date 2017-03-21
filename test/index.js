@@ -1439,7 +1439,7 @@ test('righto prerun return', function(t){
 
     setTimeout(function(){
         lazyRun(function(){
-            t.ok(Date.now() - start >= 150, 'Result completed in at least 150ms');
+            t.ok(Date.now() - start >= 145, 'Result completed in at least 150ms');
         });
         eagerRun(function(){
             t.ok(Date.now() - start < 125, 'Result completed in significantly less than 150ms');
