@@ -1,6 +1,6 @@
 var abbott = require('abbott');
 
-var defer = typeof nextTick !== 'undefined' ? nextTick : typeof setImmediate !== 'undefined' ? setImmediate : setTimeout;
+var defer = global.process && global.process.nextTick || global.setImmediate || global.setTimeout;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
