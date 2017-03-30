@@ -504,7 +504,7 @@ function nullOnNoent(error, callback){
     return callback(error);
 }
 
-var aFile = righto(fs.readFile, 'someFilePath.txt, 'utf8'),
+var aFile = righto(fs.readFile, 'someFilePath.txt', 'utf8'),
     aFileOrNull = righto.handle(aFile, nullOnNoent);
 
 aFile(function(error, result){
