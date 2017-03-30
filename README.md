@@ -155,6 +155,42 @@ getBar(function(error, result){
 });
 ```
 
+## Immediately execute
+
+You can force a righto task for run at any time without dealing with the results (or error) by calling
+it with no arguments:
+
+```
+// Lazily resolve (won't run untill called)
+var something = righto(getSomething);
+
+// Force something to start resolving *now*
+something();
+
+// later ...
+
+something(function(error, result){
+    // handle error or use result.
+});
+
+```
+
+Also, since righto tasks return themselves when called, you can do this a little more shorthand, like so:
+
+
+
+```
+// Immediately force the righto to begin resolving.
+var something = righto(getSomething)(); // <= note the call with no arguments.
+
+// later ...
+
+something(function(error, result){
+    // handle error or use result.
+});
+
+```
+
 ## Take / Multiple results
 
 By default, dependent tasks are passed only the first result of a dependency `righto`. eg:
@@ -194,6 +230,64 @@ getBar(function(error, result){
     result -> 'first third';
 });
 ```
+
+## Reduce
+
+righto.reduce takes N tasks, or an Array of tasks as the first argument,
+resolves them from left-to-right, optionally passing the result of the last, and the next task to a reducer.
+
+If no reducer is passed, the tasks will be resolved in series, and the final tasks result will be passed as the result from reduce.
+
+If a reducer is used, a seed can optionally be passed as the third parameter.
+
+No reducer passed:
+```javascript
+function a(callback){
+    aCalled = true;
+    t.pass('a called');
+    callback(null, 1);
+}
+
+function b(callback){
+    t.ok(aCalled, 'b called after a');
+    callback(null, 2);
+}
+
+var result = righto.reduce([a, b]);
+
+result(function(error, finalResult){
+    // finalResult === 2
+});
+```
+
+With a custom reducer, and seed.
+
+```javascript
+function a(last, callback){
+    aCalled = true;
+    t.pass('a called');
+    callback(null, last);
+}
+
+function b(last, callback){
+    t.ok(aCalled, 'b called after a');
+    callback(null, last + 2);
+}
+
+// Passes previous eventual result to next reducer call.
+var result = righto.reduce(
+        [a, b],
+        function(result, next){ // Reducer
+            return righto(next, result);
+        },
+        5 // Seed
+    );
+
+result(function(error, finalResult){
+    // finalResult === 7
+});
+```
+
 
 ## After
 
@@ -282,7 +376,7 @@ syncTask(function(error, result){
 
 Anything can be converted to a righto with righto.from(anything);
 
-```
+```javascript
 righto.from(someRighto); // Returns someRighto
 righto.from(somePromise); // Returns a new righto that resolves the promise
 righto.from(5); // Returns a new righto that resolves 5
@@ -378,7 +472,7 @@ z();
 Wrap a righto task with a handler that either forwards the successful result, or
 sends the rejected error through a handler to resolve the task.
 
-```
+```javascript
 function mightFail(callback){
     if(Math.random() > 0.5){
         callback('borked');
@@ -395,13 +489,13 @@ var maybeAString = righto(mightFail),
     aString = righto.handle(maybeAString, defaultString);
 
 aString(function(error, result){
-    typeof result === 'string'.
+    typeof result === 'string';
 });
 ```
 
 This can also be used to pass custom error results:
 
-```
+```javascript
 function nullOnNoent(error, callback){
     if(error.code === 'ENOENT'){
         return callback();
@@ -414,7 +508,7 @@ var aFile = righto(fs.readFile, 'someFilePath.txt, 'utf8'),
     aFileOrNull = righto.handle(aFile, nullOnNoent);
 
 aFile(function(error, result){
-    If the file isnt found, error && result will be null
+    // If the file isnt found, error && result will be null
 });
 ```
 
@@ -489,7 +583,7 @@ A shorthand way to provide a failed result.
 
 This is handy for rejecting in .get methods.
 
-```
+```javascript
 var something = someRighto.get(function(value){
         if(!value){
             return righto.fail('was falsey');
@@ -507,10 +601,10 @@ If you are using righto in an environment that supports proxies, you can use the
 var righto = require('righto').proxy;
 
 var foo = righto(function(done){
-    setTimeout(function(){
-        done(null, {foo: 'bar'});
+        setTimeout(function(){
+            done(null, {foo: 'bar'});
+        });
     });
-});
 
 foo.bar(function(error, bar){
     bar === 'bar'
@@ -524,16 +618,16 @@ The proxied api always returns the proxied version, meaning you can dot-access a
 var righto = require('righto').proxy;
 
 var foo = righto(function(done){
-    setTimeout(function(){
-        done(null, {
-            foo: {
-                bar: {
-                    baz: 'hello'
+        setTimeout(function(){
+            done(null, {
+                foo: {
+                    bar: {
+                        baz: 'hello'
+                    }
                 }
-            }
+            });
         });
     });
-});
 
 foo.bar.baz(function(error, baz){
     baz === 'hello'
@@ -544,7 +638,7 @@ foo.bar.baz(function(error, baz){
 
 Use these methods to check if something is a righto, a thenable, or resolvable (either righto or thenable);
 
-```
+```javascript
 
 var rigthoA = righto(function(done){
     done(null, 1);
@@ -596,7 +690,7 @@ You can also tell righto to print a graph trace, highlighting the offending task
 
 Either per-righto:
 
-```
+```javascript
 var task = righto(fn, dep, dep, dep...);
 
 task._traceOnError = true;
@@ -607,7 +701,7 @@ task();
 
 Or globally:
 
-```
+```javascript
 righto._autotraceOnError = true;
 ```
 
@@ -628,11 +722,11 @@ due to it having been a bad idea that I should never have implemented to begin w
 This syntax was deprecated a few v1 versions ago, so you can get a console.warn for potential usages
 of the syntax by turning on _debug mode and _warnOnUnsupported:
 
-```
+```javascript
 righto._debug = true;
 righto._warnOnUnsupported = true;
 
-... code ...
+// ... code ...
 
 var getFoo = righto(foo, [getBar]); // <- the unsupported syntax
 
