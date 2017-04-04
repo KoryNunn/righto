@@ -243,6 +243,16 @@ function errorOut(error, callback){
     callback(error);
 }
 
+function debugResolve(context, args, complete){
+    try{
+        args.push(complete);
+        context.fn.apply(null, args);
+    }catch(error){
+        console.log('Task exception executing ' + context.fn.name + ' from ' + context.resolve._trace());
+        throw error;
+    }
+}
+
 function resolveWithDependencies(done, error, argResults){
     var context = this;
 
@@ -258,6 +268,10 @@ function resolveWithDependencies(done, error, argResults){
 
     var args = [].concat.apply([], argResults),
         complete = taskComplete.bind([done, context]);
+
+    if(righto._debug){
+        return debugResolve(context, args, complete);
+    }
 
     // Slight perf bump by avoiding apply for simple cases.
     switch(args.length){
