@@ -1369,11 +1369,31 @@ test('from tasks that return eventuals', function(t){
     }
 
     var x = righto.from(makeRighto, 5),
-        y = righto.from(makeRighto, 10);
+        y = righto.from(makePromise, 10);
 
     righto.mate(x, y)(function(error, x, y){
         t.equal(x, 5);
         t.equal(y, 10);
+    });
+});
+
+test('from tasks with eventual args', function(t){
+    t.plan(1);
+
+    var x = righto(function(done){
+        done(null, 'x');
+    });
+
+    function makeRighto(a){
+        return righto(function(done){
+            done(null, a);
+        });
+    }
+
+    var result = righto.from(makeRighto, x);
+
+    result(function(error, x){
+        t.equal(x, 'x');
     });
 });
 
