@@ -1377,6 +1377,28 @@ test('from tasks that return eventuals', function(t){
     });
 });
 
+test('from promise lazy executes', function(t){
+    t.plan(2);
+
+    var ran;
+
+    function makePromise(){
+        return new Promise(function(resolve){
+            ran = true;
+            resolve();
+        });
+    }
+
+    var result = righto.from(makePromise);
+
+    t.notOk(ran, 'Promise has not run by now');
+
+    result(function(){
+        t.ok(ran, 'Promise has run by now');
+    });
+
+});
+
 test('isRighto', function(t){
     t.plan(9);
 

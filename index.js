@@ -444,7 +444,10 @@ righto.from = function(value){
     }
 
     if(!isResolvable(value) && typeof value === 'function'){
-        value = value.apply(null, slice(arguments, 1));
+        var args = arguments;
+        return righto(function(done){
+            righto.from(value.apply(null, slice(args, 1)))(done);
+        });
     }
 
     return righto.sync(function(resolved){
