@@ -383,9 +383,14 @@ function righto(){
 righto.sync = function(fn){
     return righto.apply(null, [function(){
         var args = slice(arguments),
-            done = args.pop();
+            done = args.pop(),
+            result = fn.apply(null, args);
 
-        done(null, fn.apply(null, args));
+        if(isResolvable(result)){
+            return righto.from(result)(done);
+        }
+
+        done(null, result);
     }].concat(slice(arguments, 1)));
 };
 

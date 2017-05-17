@@ -1127,6 +1127,41 @@ test('sync', function(t){
 
 });
 
+test('sync return eventual', function(t){
+    t.plan(2);
+
+    var stuff = righto.sync(function(){
+        return righto(function(done){
+            asyncify(function(){
+                done(null, 3);
+            });
+        });
+    });
+
+    stuff(function(error, result){
+        t.notOk(error, 'no error');
+        t.equal(result, 3, 'Got correct result');
+    });
+
+});
+
+test('sync return erroring eventual', function(t){
+    t.plan(1);
+
+    var stuff = righto.sync(function(){
+        return righto(function(done){
+            asyncify(function(){
+                done(true);
+            });
+        });
+    });
+
+    stuff(function(error, result){
+        t.ok(error, 'got error');
+    });
+
+});
+
 test('sync errors throw', function(t){
     t.plan(2);
 

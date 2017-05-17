@@ -372,6 +372,8 @@ syncTask(function(error, result){
 
 ```
 
+Eventuals can also be returned from inside righto.sync, which will be resolved within the flow.
+
 ## From
 
 Anything can be converted to a righto with righto.from(anything);
