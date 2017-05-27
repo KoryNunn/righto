@@ -434,6 +434,17 @@ test('righto.reduce with values custom reducer', function(t){
     });
 });
 
+test('righto.reduce no items', function(t){
+    t.plan(2);
+
+    var result = righto.reduce([]);
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.equal(finalResult, undefined, 'Got correct final result');
+    });
+});
+
 test('righto().get(key)', function(t){
     t.plan(4);
 

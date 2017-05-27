@@ -240,6 +240,8 @@ If no reducer is passed, the tasks will be resolved in series, and the final tas
 
 If a reducer is used, a seed can optionally be passed as the third parameter.
 
+If no tasks are passed, the final result will be `undefined`.
+
 No reducer passed:
 ```javascript
 function a(callback){
