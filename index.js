@@ -325,6 +325,10 @@ function resolver(callback){
         complete = noOp;
     }
 
+    if(isRighto(complete)){
+        throw new Error('righto instance passed into a righto instance instead of a callback');
+    }
+
     if(typeof complete !== 'function'){
         throw new Error('Callback must be a function');
     }
@@ -360,6 +364,10 @@ function righto(){
 
     if(typeof fn !== 'function'){
         throw new Error('No task function passed to righto');
+    }
+
+    if(isRighto(fn) && args.length > 0){
+        throw new Error('Righto task passed as target task to righto()');
     }
 
     var resolverContext = {
