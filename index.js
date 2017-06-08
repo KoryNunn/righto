@@ -86,7 +86,7 @@ function traceGet(instance, result){
 function get(fn){
     var instance = this;
     return righto(function(result, fn, done){
-        if(typeof fn === 'string'){
+        if(typeof fn === 'string' || typeof fn === 'number'){
             traceGet(instance, result);
             return done(null, result[fn]);
         }
@@ -336,26 +336,25 @@ function resolver(callback){
     if(context.results){
         return complete.apply(null, context.results);
     }
-
-    if(righto._debug){
-        if(righto._autotrace || this.resolve._traceOnExecute){
-            console.log('Executing ' + context.fn.name + ' ' + this.resolve._trace());
-        }
-    }
-
     context.callbacks.push(complete);
 
-    if(this.started++){
+    if(context.started++){
         return;
     }
 
     var complete = resolveWithDependencies.bind(context, function(resolvedResults){
+            if(righto._debug){
+                if(righto._autotrace || context.resolve._traceOnExecute){
+                    console.log('Executing ' + context.fn.name + ' ' + context.resolve._trace());
+                }
+            }
+
             context.results = resolvedResults;
         });
 
-    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency.bind(this.resolve)));
+    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency.bind(context.resolve)));
 
-    return this.resolve;
+    return context.resolve;
 };
 
 function righto(){
