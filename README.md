@@ -8,11 +8,31 @@ make caching, dependency resolving tasks
 
 `righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
 
-```javascript
-righto(task, [argument or righto task])
-```
-
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
+
+```
+var document = righto(db.Documents.get, documentId);
+
+var user = righto(db.Users.get, userId);
+
+var account = righto(db.Accounts.get, righto.resolve({
+        userId: user.get('id')
+    }));
+
+function isOwner(document, account){
+    if(document.ownerId !== account.id){
+        return righto.fail({ message: 'Account does not own document', code: 403 });
+    }
+}
+
+var hasPermission = righto.sync(isOwner, document, account);
+
+var allowedDocument = righto.mate(document, righto.after(hasPermission));
+
+allowedDocument(function(eror, document){
+    // Respond with the error or the document.
+});
+```
 
 ## Who's using it?
 
@@ -20,7 +40,13 @@ righto(task, [argument or righto task])
 
 <img src="https://securetenant.com.au/images/st-logo4.svg" alt="Secure tenent" height="70px"/> Used everywhere in the backend and frontend of https://securetenant.com.au/
 
-## example:
+## Usage:
+
+```javascript
+righto(task, [argument or righto task])
+```
+
+## Example:
 
 async dependencies passed to bar:
 
