@@ -229,7 +229,7 @@ function taskComplete(error){
     done(results);
 
     for(var i = 0; i < callbacks.length; i++){
-        callbacks[i].apply(null, results);
+        defer(callbacks[i].apply.bind(callbacks[i], null, results));
     }
 }
 
@@ -316,9 +316,8 @@ function resolveDependencies(args, complete, resolveDependency){
     }
 }
 
-function resolver(callback){
-    var context = this,
-        complete = callback;
+function resolver(complete){
+    var context = this;
 
     // No callback? Just run the task.
     if(!arguments.length){
@@ -336,13 +335,14 @@ function resolver(callback){
     if(context.results){
         return complete.apply(null, context.results);
     }
+
     context.callbacks.push(complete);
 
     if(context.started++){
         return;
     }
 
-    var complete = resolveWithDependencies.bind(context, function(resolvedResults){
+    var resolved = resolveWithDependencies.bind(context, function(resolvedResults){
             if(righto._debug){
                 if(righto._autotrace || context.resolve._traceOnExecute){
                     console.log('Executing ' + context.fn.name + ' ' + context.resolve._trace());
@@ -352,7 +352,7 @@ function resolver(callback){
             context.results = resolvedResults;
         });
 
-    defer(resolveDependencies.bind(null, context.args, complete, resolveDependency.bind(context.resolve)));
+    defer(resolveDependencies.bind(null, context.args, resolved, resolveDependency.bind(context.resolve)));
 
     return context.resolve;
 };

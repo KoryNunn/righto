@@ -1534,3 +1534,78 @@ test('righto prerun return', function(t){
         });
     }, 50);
 });
+
+test('enourmous handle stack depth success', function(t){
+    t.plan(1);
+
+    var depth = 0;
+    var testDepth = 10000;
+
+    function run(callback){
+        var thingo = righto.handle(righto(function(done){
+            if(depth++ < testDepth){
+                return done('error');
+            }
+
+            done(null, 'complete');
+        }), function(error, done){
+            if(error){
+                return run(done);
+            }
+
+            done();
+        });
+
+        thingo(callback);
+    }
+
+    run(function(error, result){
+        t.equal(result, 'complete', 'Success after enourmous handle depth');
+    })
+});
+
+test('enourmous handle stack depth reject', function(t){
+    t.plan(1);
+
+    var depth = 0;
+    var testDepth = 10000;
+
+    function run(callback){
+        var thingo = righto.handle(righto(function(done){
+            if(depth++ < testDepth){
+                return done('retry');
+            }
+
+            done('fail');
+        }), function(error, done){
+            if(error === 'retry'){
+                return run(done);
+            }
+
+            done(error);
+        });
+
+        thingo(callback);
+    }
+
+    run(function(error, result){
+        t.equal(error, 'fail', 'Rejection after enourmous handle depth');
+    })
+});
+
+test('enourmous stack depth already done', function(t){
+    t.plan(1);
+
+    var depth = 0;
+    var testDepth = 10000;
+
+    var x = righto.from(1);
+
+    while(depth++ < testDepth){
+        x = righto.sync(x => x, x);
+    }
+
+    x(function(error, result){
+        t.equal(result, 1, 'Success after enourmous handle depth');
+    });
+});
