@@ -1,7 +1,11 @@
 # Righto
 
-An Eventuals implementation that lets you use err-backs(normal callback style), promises, iterators, whatever you like.
-Doesn't catch thrown errors.
+An Eventuals implementation that:
+ - Lets you use synchronous functions, err-backs (normal callback style), promises, iterators (yield), whatever you like.
+ - Are lazily evaluated.
+ - Implicitly (and transparently) handles execution order and parallelisation.
+ - Provides a solution for all common (and some less common) async flows, parallel, waterfall, series, etc, etc...
+ - Doesn't catch thrown errors. [Why is this good?](https://github.com/korynunn/righto-v-promise#errors)
 
 `righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
 
