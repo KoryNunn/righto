@@ -11,24 +11,31 @@ make caching, dependency resolving tasks
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
 ```
+// Make a task from an err-back function
 var document = righto(db.Documents.get, documentId);
 
 var user = righto(db.Users.get, userId);
 
+// Resolve an object with eventual properties to pass to a function.
 var account = righto(db.Accounts.get, righto.resolve({
         userId: user.get('id')
     }));
 
+// Reject the flow if a business rule is not met
 function isOwner(document, account){
     if(document.ownerId !== account.id){
         return righto.fail({ message: 'Account does not own document', code: 403 });
     }
 }
 
+// Make a task from a synchronous function
+// Depend on `document` and `account` in parallel, automatically.
 var hasPermission = righto.sync(isOwner, document, account);
 
+// Take results from a task only after another task is complete
 var allowedDocument = righto.mate(document, righto.after(hasPermission));
 
+// Use the results.
 allowedDocument(function(eror, document){
     // Respond with the error or the document.
 });
@@ -37,8 +44,6 @@ allowedDocument(function(eror, document){
 ## Who's using it?
 
 <img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 800k concurrent users for the early 2017 season.
-
-<img src="https://securetenant.com.au/images/st-logo4.svg" alt="Secure tenent" height="70px"/> Used everywhere in the backend and frontend of https://securetenant.com.au/
 
 ## Usage:
 
