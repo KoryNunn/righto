@@ -1,16 +1,13 @@
 # Righto
 
-Wana do some async stuff? Righto..
-
-# What
-
-make caching, dependency resolving tasks
+An Eventuals implementation that lets you use err-backs(normal callback style), promises, iterators, whatever you like.
+Doesn't catch thrown errors.
 
 `righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
-```
+```javascript
 // Make a task from an err-back function
 var document = righto(db.Documents.get, documentId);
 
