@@ -156,7 +156,7 @@ getBar(function(error, result){
 You can force a righto task for run at any time without dealing with the results (or error) by calling
 it with no arguments:
 
-```
+```javascript
 // Lazily resolve (won't run untill called)
 var something = righto(getSomething);
 
@@ -175,7 +175,7 @@ Also, since righto tasks return themselves when called, you can do this a little
 
 
 
-```
+```javascript
 // Immediately force the righto to begin resolving.
 var something = righto(getSomething)(); // <= note the call with no arguments.
 
