@@ -49,43 +49,7 @@ allowedDocument(function(eror, document){
 ## Usage:
 
 ```javascript
-righto(task, [argument or righto task])
-```
-
-## Example:
-
-async dependencies passed to bar:
-
-```javascript
-
-// Just your average callback-passing-style function.
-function foo(callback){
-
-    setTimeout(function(){
-
-        callback(null, 'world');
-
-    }, 1000);
-
-}
-
-// A righto callback-passing-style function
-var getFoo = righto(foo);
-
-// Another normal callback-passing-style function.
-function bar(a, callback){
-    callback(null, 'hello ' + a);
-}
-
-// Another righto
-var getBar = righto(bar, getFoo);
-
-getBar(function(error, result){
-
-    // ...about 1 second later...
-    result -> 'hello world';
-
-});
+var eventual = righto(task, any...);
 ```
 
 ## API support
