@@ -7,7 +7,7 @@ An Eventuals implementation that:
  - Provides a solution for all common (and some less common) async flows, parallel, waterfall, series, etc, etc...
  - Doesn't catch thrown errors. [Why is this good?](https://github.com/korynunn/righto-v-promise#errors)
 
-`righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
+`righto` takes a task to run, and arguments to pass to the task. If you pass any eventual arguments (rightos or promises), they will be resolved before running the dependant task.
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
