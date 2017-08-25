@@ -1,59 +1,55 @@
 # Righto
 
-Wana do some async stuff? Righto..
+An Eventuals implementation that:
+ - Lets you use synchronous functions, err-backs (normal callback style), promises, iterators (yield), whatever you like.
+ - Are lazily evaluated.
+ - Implicitly (and transparently) handles execution order and parallelisation.
+ - Provides a solution for all common (and some less common) async flows, parallel, waterfall, series, etc, etc...
+ - Doesn't catch thrown errors. [Why is this good?](https://github.com/korynunn/righto-v-promise#errors)
 
-# What
-
-make caching, dependency resolving tasks
-
-`righto` takes a task to run, and arguments to pass to the task. If you pass a `righto`'d task as an argument, it will be resolved before running the dependant task.
-
-```javascript
-righto(task, [argument or righto task])
-```
+`righto` takes a task to run, and arguments to pass to the task. If you pass any eventual arguments (rightos or promises), they will be resolved before running the dependant task.
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
+
+```javascript
+// Make a task from an err-back function
+var document = righto(db.Documents.get, documentId);
+
+var user = righto(db.Users.get, userId);
+
+// Resolve an object with eventual properties to pass to a function.
+var account = righto(db.Accounts.get, righto.resolve({
+        userId: user.get('id')
+    }));
+
+// Reject the flow if a business rule is not met
+function isOwner(document, account){
+    if(document.ownerId !== account.id){
+        return righto.fail({ message: 'Account does not own document', code: 403 });
+    }
+}
+
+// Make a task from a synchronous function
+// Depend on `document` and `account` in parallel, automatically.
+var hasPermission = righto.sync(isOwner, document, account);
+
+// Take results from a task only after another task is complete
+var allowedDocument = righto.mate(document, righto.after(hasPermission));
+
+// Use the results.
+allowedDocument(function(eror, document){
+    // Respond with the error or the document.
+});
+```
 
 ## Who's using it?
 
 <img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 800k concurrent users for the early 2017 season.
 
-<img src="https://securetenant.com.au/images/st-logo4.svg" alt="Secure tenent" height="70px"/> Used everywhere in the backend and frontend of https://securetenant.com.au/
-
-## example:
-
-async dependencies passed to bar:
+## Usage:
 
 ```javascript
-
-// Just your average callback-passing-style function.
-function foo(callback){
-
-    setTimeout(function(){
-
-        callback(null, 'world');
-
-    }, 1000);
-
-}
-
-// A righto callback-passing-style function
-var getFoo = righto(foo);
-
-// Another normal callback-passing-style function.
-function bar(a, callback){
-    callback(null, 'hello ' + a);
-}
-
-// Another righto
-var getBar = righto(bar, getFoo);
-
-getBar(function(error, result){
-
-    // ...about 1 second later...
-    result -> 'hello world';
-
-});
+var eventual = righto(task, any...);
 ```
 
 ## API support
@@ -160,7 +156,7 @@ getBar(function(error, result){
 You can force a righto task for run at any time without dealing with the results (or error) by calling
 it with no arguments:
 
-```
+```javascript
 // Lazily resolve (won't run untill called)
 var something = righto(getSomething);
 
@@ -179,7 +175,7 @@ Also, since righto tasks return themselves when called, you can do this a little
 
 
 
-```
+```javascript
 // Immediately force the righto to begin resolving.
 var something = righto(getSomething)(); // <= note the call with no arguments.
 
@@ -514,19 +510,6 @@ var aFile = righto(fs.readFile, 'someFilePath.txt', 'utf8'),
 aFile(function(error, result){
     // If the file isnt found, error && result will be null
 });
-```
-
-## Possible rightos: righto.from(anything)
-
-Any value can be turned into a righto using righto.from();
-
-```javascript
-var num = righto.from(1); // -> righto:number;
-var string = righto.from('hello'); // -> righto:string;
-var nothing = righto.from(null); // -> righto:null;
-var anyValue = righto.from(anything); // -> righto:anything;
-
-var self = righto.from(someRighto); // -> someRighto;
 ```
 
 ## Resolve
