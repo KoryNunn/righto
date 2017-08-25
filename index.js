@@ -425,6 +425,12 @@ righto.all = function(value){
 righto.reduce = function(values, reducer, seed){
     var hasSeed = arguments.length >= 3;
 
+    if(!reducer){
+        reducer = function(previous, next){
+            return righto(next);
+        };
+    }
+
     return righto.from(values).get(function(values){
         if(!values || !values.reduce){
             throw new Error('values was not a reduceable object (like an array)');
@@ -441,15 +447,7 @@ righto.reduce = function(values, reducer, seed){
         }
 
         return values.reduce(function(previous, next){
-            if(reducer){
-                return righto(function(previous, done){
-                    reducer(previous, next)(done);
-                }, previous);
-            }
-
-            return righto(function(done){
-                return next(done);
-            }, righto.after(righto.from(previous)));
+            return righto.sync(reducer, previous, righto.value(next));
         }, seed);
     });
 };
