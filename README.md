@@ -92,6 +92,31 @@ someRighto(function(error, result){
 });
 ```
 
+And supports easily integrating back to promises:
+
+
+```javascript
+
+var someRighto = righto(function(done){
+    setTimeout(function(){
+        done(null, 'foo');
+    });
+});
+
+var somePromise = new Promise(righto.fork(someRighto));
+
+somePromise.then(function(result){
+    result === 'foo';
+});
+```
+
+#### Warning:
+
+1. promises execute immediately.
+1. promises will catch any errors thrown within their resolver, and turn them into rejections.
+
+Righto can't help you once you pass control back to promises :)
+
 ### Generators (yield)
 
 righto supports running a generator (or any `next`able iterator):

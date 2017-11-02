@@ -907,6 +907,36 @@ test('fake promise support', function(t){
     });
 });
 
+test('promise resolution support', function(t){
+    t.plan(1);
+
+    var someRighto = righto.from(1);
+
+    var somePromise = new Promise(righto.fork(someRighto));
+
+    somePromise.then(function(result, error){
+        t.equal(result, 1);
+    })
+    .catch(function(){
+        t.fail();
+    });
+});
+
+test('promise resolution support error', function(t){
+    t.plan(1);
+
+    var someRighto = righto.fail('borked');
+
+    var somePromise = new Promise(righto.fork(someRighto));
+
+    somePromise.then(function(result){
+        t.fail();
+    })
+    .catch(function(error){
+        t.equal(error, 'borked');
+    });
+});
+
 test('generator support', function(t){
     t.plan(1);
 

@@ -569,6 +569,18 @@ righto.fail = function(error){
     }, error);
 };
 
+righto.fork = function(value){
+    return function(resolve, reject){
+        righto.from(value)(function(error, result){
+            if(error){
+                return reject(error);
+            }
+
+            resolve(result);
+        });
+    };
+};
+
 righto.isRighto = isRighto;
 righto.isThenable = isThenable;
 righto.isResolvable = isResolvable;
