@@ -464,10 +464,11 @@ userName(function(error, something){
 
 ```
 
-## Surely (resolve [error?, results...?])
+## Surely
 
 You can resolve a task to an array containing either
-the error or results from a righto with `righto.surely`
+the error or results from a righto with `righto.surely`,
+which resolves to an array in the form of `[error?, results...?]`.
 
 ```javascript
 
