@@ -453,14 +453,12 @@ righto.reduce = function(values, reducer, seed){
 };
 
 righto.from = function(value){
-    if(isRighto(value)){
-        return value;
+    if(arguments.length > 1){
+        throw new Error('righto.from called with more than one argument. Righto v4 no longer supports constructing eventuals via `from`, use `sync` instead.');
     }
 
-    if(!isResolvable(value) && typeof value === 'function'){
-        return righto.all(slice(arguments, 1)).get(function(args){
-            return righto.from(value.apply(null, args));
-        });
+    if(isRighto(value)){
+        return value;
     }
 
     return righto.sync(function(resolved){
