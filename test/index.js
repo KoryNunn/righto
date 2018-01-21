@@ -1429,7 +1429,7 @@ test('get returning an array of exactly 1 righto', function(t){
     });
 });
 
-test('from tasks that return eventuals', function(t){
+test('sync tasks that return eventuals', function(t){
     t.plan(2);
 
     function makeRighto(a){
@@ -1444,8 +1444,8 @@ test('from tasks that return eventuals', function(t){
         });
     }
 
-    var x = righto.from(makeRighto, 5),
-        y = righto.from(makePromise, 10);
+    var x = righto.sync(makeRighto, 5),
+        y = righto.sync(makePromise, 10);
 
     righto.mate(x, y)(function(error, x, y){
         t.equal(x, 5);
@@ -1453,7 +1453,7 @@ test('from tasks that return eventuals', function(t){
     });
 });
 
-test('from tasks with eventual args', function(t){
+test('sync tasks with eventual args', function(t){
     t.plan(1);
 
     var x = righto(function(done){
@@ -1466,33 +1466,45 @@ test('from tasks with eventual args', function(t){
         });
     }
 
-    var result = righto.from(makeRighto, x);
+    var result = righto.sync(makeRighto, x);
 
     result(function(error, x){
         t.equal(x, 'x');
     });
 });
 
-test('from promise lazy executes', function(t){
-    t.plan(2);
+test('sync promise lazy executes', function(t){
+    t.plan(3);
 
     var ran;
 
-    function makePromise(){
+    function makePromise(x){
         return new Promise(function(resolve){
             ran = true;
-            resolve();
+            resolve(x);
         });
     }
 
-    var result = righto.from(makePromise);
+    var result = righto.sync(makePromise, 1);
 
     t.notOk(ran, 'Promise has not run by now');
 
-    result(function(){
+    result(function(error, value){
+        t.equal(value, 1);
         t.ok(ran, 'Promise has run by now');
     });
+});
 
+test('from wrap function', function(t){
+    t.plan(1);
+
+    function something(){}
+
+    var result = righto.from(something);
+
+    result(function(error, result){
+        t.equal(result, something, 'Wrapped a function in a righto');
+    });
 });
 
 test('isRighto', function(t){
