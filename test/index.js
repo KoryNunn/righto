@@ -1474,14 +1474,14 @@ test('sync tasks with eventual args', function(t){
 });
 
 test('sync promise lazy executes', function(t){
-    t.plan(2);
+    t.plan(3);
 
     var ran;
 
     function makePromise(x){
         return new Promise(function(resolve){
             ran = true;
-            resolve();
+            resolve(x);
         });
     }
 
@@ -1489,7 +1489,8 @@ test('sync promise lazy executes', function(t){
 
     t.notOk(ran, 'Promise has not run by now');
 
-    result(function(){
+    result(function(error, value){
+        t.equal(value, 1);
         t.ok(ran, 'Promise has run by now');
     });
 });
