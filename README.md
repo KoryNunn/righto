@@ -254,7 +254,7 @@ getBar(function(error, result){
 
 ## Reduce
 
-righto.reduce takes N tasks, or an Array of tasks as the first argument,
+righto.reduce takes an Array of values (an an eventual that resolves to an array) as the first argument,
 resolves them from left-to-right, optionally passing the result of the last, and the next task to a reducer.
 
 If no reducer is passed, the tasks will be resolved in series, and the final tasks result will be passed as the result from reduce.
@@ -276,7 +276,7 @@ function b(callback){
     callback(null, 2);
 }
 
-var result = righto.reduce([a, b]);
+var result = righto.reduce([righto(a), righto(b)]);
 
 result(function(error, finalResult){
     // finalResult === 2

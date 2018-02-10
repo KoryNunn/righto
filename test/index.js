@@ -347,30 +347,6 @@ test('righto.all righto deps', function(t){
     });
 });
 
-test('righto.reduce', function(t){
-    t.plan(4);
-
-    var aCalled;
-
-    function a(callback){
-        aCalled = true;
-        t.pass('a called');
-        callback(null, 1);
-    }
-
-    function b(callback){
-        t.ok(aCalled, 'b called after a');
-        callback(null, 2);
-    }
-
-    var result = righto.reduce([a, b]);
-
-    result(function(error, finalResult){
-        t.notOk(error, 'no error');
-        t.equal(finalResult, 2, 'Got correct final result');
-    });
-});
-
 test('righto.reduce eventuals', function(t){
     t.plan(4);
 
@@ -431,6 +407,19 @@ test('righto.reduce with values custom reducer', function(t){
     result(function(error, finalResult){
         t.notOk(error, 'no error');
         t.deepEqual(finalResult, 11, 'Got correct final result');
+    });
+});
+
+test('righto.reduce with values custom reducer no seed', function(t){
+    t.plan(2);
+
+    var result = righto.reduce([1, 2, 3], function(result, next){
+        return righto.sync((a) => a + next, result);
+    });
+
+    result(function(error, finalResult){
+        t.notOk(error, 'no error');
+        t.deepEqual(finalResult, 6, 'Got correct final result');
     });
 });
 

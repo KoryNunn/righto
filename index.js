@@ -443,7 +443,7 @@ righto.reduce = function(values, reducer, seed){
         values = values.slice();
 
         if(!hasSeed){
-            seed = righto(values.shift());
+            seed = values.shift();
         }
 
         return values.reduce(function(previous, next){
