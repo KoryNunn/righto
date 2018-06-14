@@ -7,6 +7,7 @@
   },
   "scripts": {
     "test": "node test",
+    "coverage": "covert test",
     "watchtest": "watchify -d test/index.js -o test/index.browser.js"
   },
   "author": "",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "console-watch": "^1.0.2",
+    "covert": "^1.1.0",
     "linklocal": "^2.5.2",
     "tape": "^4.4.0",
     "watchify": "^3.7.0"
