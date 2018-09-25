@@ -59,7 +59,7 @@ var eventual = righto(task, any...);
 righto suports passing error-first CPS functions by default as tasks:
 
 ```javascript
-function foo(callback){
+function getFoo(callback){
     setTimeout(function(){
         callback(null, 'foo');
     });
