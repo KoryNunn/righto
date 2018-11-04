@@ -46,6 +46,8 @@ allowedDocument(function(eror, document){
 
 <img src="https://s.yimg.com/ao/i/mp/properties/multipass/img/plus7/channel-logo-seven.png" alt="7Tennis" height="70px"/> Used in the backend of https://7tennis.com.au/, which handled 800k concurrent users for the early 2017 season.
 
+The inventor of JavaScript said it was cool in a tweet once: https://twitter.com/BrendanEich/status/1059210746163130368
+
 ## Usage:
 
 ```javascript
