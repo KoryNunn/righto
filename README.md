@@ -38,7 +38,7 @@ var concattedFiles = righto(concatStrings, myFile, mySecondFile);
 concattedFiles(function(error, result){
     console.log(error); // null
     console.log(result); // the two concatted files.
-})
+});
 
 ```
 
