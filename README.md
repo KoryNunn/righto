@@ -11,6 +11,36 @@ An Eventuals implementation that:
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
+## Signature:
+
+`righto(cpsFunction, ...args) -> fn(err-back)`
+
+where:
+`cpsFunction(...args, err-back)`
+`err-back(error, ...results)`
+
+## Examples
+
+Simple Example: read some files
+```javascript
+var fs = require('fs');
+
+function concatStrings(a, b, callback){
+    callback(null, a + b);
+};
+
+var myFile = righto(fs.readFile, 'utf8' 'myFile.txt');
+var mySecondFile = righto(fs.readFile, 'utf8', 'mySecondFile.txt');
+var concattedFiles = righto(concatStrings, myFile, mySecondFile);
+
+concattedFiles(function(error, result){
+    console.log(error); // null
+    console.log(result); // the two concatted files.
+})
+
+```
+
+A more involved example: return a document for a user while checking permissions.
 ```javascript
 // Make a task from an err-back function
 var document = righto(db.Documents.get, documentId);
