@@ -13,11 +13,13 @@ An Eventuals implementation that:
 
 ## Signature:
 
-`righto(cpsFunction, ...args) -> fn(err-back)`
+`righto(cps-function, ...args) -> fn(err-back)`
 
 where:
-`cpsFunction(...args, err-back)`
-`err-back(error, ...results)`
+
+a cps-function has signature: `cps-function(...args, err-back) -> void`
+
+an err-back has signature: `err-back(error, ...results) -> void`
 
 ## Examples
 
