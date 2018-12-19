@@ -436,14 +436,14 @@ righto.reduce = function(values, reducer, seed){
             throw new Error('values was not a reduceable object (like an array)');
         }
 
-        if(!values.length){
-            return righto.from(undefined);
-        }
-
         values = values.slice();
 
         if(!hasSeed){
             seed = values.shift();
+        }
+
+        if(!values.length){
+            return righto.from(seed);
         }
 
         return values.reduce(function(previous, next){
