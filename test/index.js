@@ -1648,3 +1648,37 @@ test('enourmous stack depth already done', function(t){
         t.equal(result, 1, 'Success after enourmous handle depth');
     });
 });
+
+test('wrap', function(t){
+    t.plan(1);
+
+    var obj = {
+        foo: 1,
+        run: function(callback){
+            callback(null, this.foo);
+        }
+    };
+
+    var wrappedObj = righto.wrap(obj);
+
+    var runResult = wrappedObj.run();
+
+    runResult(function(error, result){
+        t.equal(result, 1);
+    });
+});
+
+test('wrap non-fns', function(t){
+    t.plan(1);
+
+    var obj = {
+        foo: 1,
+        run: function(callback){
+            callback(null, this.foo);
+        }
+    };
+
+    var wrappedObj = righto.wrap(obj);
+
+    t.equal(wrappedObj.foo, 1);
+});

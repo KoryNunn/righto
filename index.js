@@ -579,6 +579,26 @@ righto.fork = function(value){
     };
 };
 
+righto.wrap = function(context){
+    if(typeof Proxy === 'undefined'){
+        throw new Error('This environment does not support Proxy\'s');
+    }
+
+    if(typeof Proxy === 'undefined'){
+        throw new Error('This environment does not support Proxy\'s');
+    }
+
+    return new Proxy(context, {
+        get: function(target, key){
+            if(key in target && typeof target[key] === 'function'){
+                return righto.bind(null, target[key].bind(target));
+            }
+
+            return target[key];
+        }
+    });
+}
+
 righto.isRighto = isRighto;
 righto.isThenable = isThenable;
 righto.isResolvable = isResolvable;
