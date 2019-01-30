@@ -1,4 +1,9 @@
-# Righto
+<h1 align="center">Righto<h1>
+
+<p align="center">
+<h2 align="center">Simple, Fast, Cross-API eventuals.</h2>
+</p>
+<hr />
 
 An Eventuals implementation that:
  - Lets you use synchronous functions, err-backs (normal callback style), promises, iterators (yield), whatever you like.
