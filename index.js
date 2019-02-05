@@ -584,10 +584,6 @@ righto.wrap = function(context){
         throw new Error('This environment does not support Proxy\'s');
     }
 
-    if(typeof Proxy === 'undefined'){
-        throw new Error('This environment does not support Proxy\'s');
-    }
-
     return new Proxy(context, {
         get: function(target, key){
             if(key in target && typeof target[key] === 'function'){
