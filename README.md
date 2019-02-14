@@ -16,6 +16,8 @@ An Eventuals implementation that:
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
 
+# [QUICK REFERENCE](https://github.com/KoryNunn/righto/wiki/Quick-Reference)
+
 ## Signature:
 
 `righto(cps-function, ...args) -> fn(err-back)`
