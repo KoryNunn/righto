@@ -1,4 +1,9 @@
-# Righto
+<h1 align="center">Righto<h1>
+
+<p align="center">
+<h2 align="center">Simple, Fast, Cross-API eventuals.</h2>
+</p>
+<hr />
 
 An Eventuals implementation that:
  - Lets you use synchronous functions, err-backs (normal callback style), promises, iterators (yield), whatever you like.
@@ -10,6 +15,8 @@ An Eventuals implementation that:
 `righto` takes a task to run, and arguments to pass to the task. If you pass any eventual arguments (rightos or promises), they will be resolved before running the dependant task.
 
 **`righto`'d tasks are resolved once** and the result is cached. If a task is in flight when it's results are asked for, the results will be passed when the task resolves.
+
+# [QUICK REFERENCE](https://github.com/KoryNunn/righto/wiki/Quick-Reference)
 
 ## Signature:
 
@@ -38,7 +45,7 @@ var concattedFiles = righto(concatStrings, myFile, mySecondFile);
 concattedFiles(function(error, result){
     console.log(error); // null
     console.log(result); // the two concatted files.
-})
+});
 
 ```
 
