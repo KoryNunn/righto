@@ -1,3 +1,61 @@
+# V6
+
+righto.iterate is now more reasonable, and is more similar to async/await
+
+## Breaking changes
+
+The generator function is no longer passed `reject`, instead, return a rejected righto:
+
+## Old style
+```js
+var doThing = righto.iterate(function*(reject){
+    return reject('some error');
+});
+
+doThing(function(error, result){ ... });
+```
+
+## New style
+
+```js
+var doThing = righto.iterate(function*(){
+    return righto.fail('some error');
+});
+
+doThing(function(error, result){ ... });
+```
+
+Arguments can now be passed into the function returned from righto.iterate
+
+## Old style
+```js
+var doThing = righto.iterate(function*(param1, param2){
+    var result = yield righto(doSomething, param1, param2)
+
+    return result;
+}, arg1, arg2);
+
+
+doThing(function(error, result){ ... });
+```
+
+## New style
+```js
+var doThing = righto.iterate(function*(param1, param2){
+    var result = yield righto(doSomething, param1, param2)
+
+    return result;
+});
+
+var result = righto(doThing, arg1, arg2);
+
+result(function(error, result){ ... });
+```
+
+this makes righto.iterate easier to use outside of a wrapping function, and results in a function that works like every other CPS style function
+
+Also fixed: Returning a resolvable value will now pass the resolved result instead of passing the resolvable through as the result.
+
 # V5
 
 `righto.reduce` is now more reasonable, and will now always treat the first parameter as an array of values/eventuals, rather than assuming they were functions to be called with righto. Migration is trivial:

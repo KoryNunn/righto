@@ -163,7 +163,7 @@ Righto can't help you once you pass control back to promises :)
 righto supports running a generator (or any `next`able iterator):
 
 ```javascript
-var generated = righto.iterate(function*(){
+var generated = righto.iterate(function*(a, b, c){
     var x = yield righto(function(done){
         setTimeout(function(){
             done(null, 'x');
@@ -176,11 +176,13 @@ var generated = righto.iterate(function*(){
         });
     });
 
-    return x + y;
+    return x + y + a + b + c;
 });
 
-generated(function(error, result){
-    result === 'xy';
+var result = generated('a', 'b', 'c');
+
+result(function(error, result){
+    result === 'xyabc';
 });
 ```
 

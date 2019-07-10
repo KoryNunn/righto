@@ -31,31 +31,35 @@ function getCallLine(stack){
     return match ? match[1] : ' - No trace - ';
 }
 
+function takeWrap(results){
+    this.results = results;
+}
+
+function take(targetTask){
+    var done = this;
+    var keys = slice(arguments, 1);
+    return targetTask(function(error){
+        if(error){
+            return done(error);
+        }
+        var args = slice(arguments, 1);
+        done(error, new takeWrap(keys.map(function(key){
+            return args[key];
+        })));
+    });
+}
+
 function resolveDependency(task, done){
     if(isThenable(task)){
         task = righto(abbott(task));
     }
 
     if(isRighto(task)){
-        return task(function(error){
-            var results = slice(arguments, 1, 2);
-
-            if(!results.length){
-                results.push(undefined);
-            }
-
-            done(error, results);
-        });
+        return task(done);
     }
 
-    function take(targetTask){
-        var keys = slice(arguments, 1);
-        return targetTask(function(error){
-            var args = slice(arguments, 1);
-            done(error, keys.map(function(key){
-                return args[key];
-            }));
-        });
+    if(isTake(task)){
+        return take.apply(done, task.__take__);
     }
 
     if(
@@ -69,11 +73,7 @@ function resolveDependency(task, done){
         console.warn('\u001b[33mPossible unsupported take/ignore syntax detected:\u001b[39m\n' + getCallLine(this._stack));
     }
 
-    if(isTake(task)){
-        return take.apply(null, task.__take__);
-    }
-
-    return done(null, [task]);
+    return done(null, task);
 }
 
 function traceGet(instance, result){
@@ -122,22 +122,16 @@ function proxy(instance){
     return instance._;
 }
 
-function resolveIterator(fn){
+function createIterator(fn){
+    var outerArgs = slice(arguments, 1);
+
     return function(){
-        var args = slice(arguments),
+        var args = outerArgs.concat(slice(arguments)),
             callback = args.pop(),
             errored,
             lastValue;
 
-        function reject(error){
-            if(errored){
-                return;
-            }
-            errored = true;
-            callback(error);
-        }
-
-        var generator = fn.apply(null, args.concat(reject));
+        var generator = fn.apply(null, args);
 
         function run(){
             if(errored){
@@ -148,7 +142,7 @@ function resolveIterator(fn){
                 if(errored){
                     return;
                 }
-                return callback(null, next.value);
+                return righto.from(next.value)(callback);
             }
             if(isResolvable(next.value)){
                 righto.sync(function(value){
@@ -156,7 +150,7 @@ function resolveIterator(fn){
                     run();
                 }, next.value)(function(error){
                     if(error){
-                        reject(error);
+                        callback(error);
                     }
                 });
                 return;
@@ -266,7 +260,14 @@ function resolveWithDependencies(done, error, argResults){
         return;
     }
 
-    var args = [].concat.apply([], argResults),
+    var args = argResults.reduce((results, next) => {
+            if(next && next instanceof takeWrap){
+                return results.concat(next.results);
+            }
+
+            results.push(next);
+            return results;
+        }, []) ,
         complete = taskComplete.bind([done, context]);
 
     if(righto._debug){
@@ -312,6 +313,10 @@ function resolveDependencies(args, complete, resolveDependency){
     }
 
     for(var i = 0; i < args.length; i++){
+        if(!isResolvable(args[i]) && !isTake(args[i])){
+            dependencyResolved(i, null, args[i]);
+            continue;
+        }
         resolveDependency(args[i], dependencyResolved.bind(null, i));
     }
 }
@@ -523,12 +528,7 @@ righto.resolve = function(object, deep){
     }, pairs);
 };
 
-righto.iterate = function(){
-    var args = slice(arguments),
-        fn = args.shift();
-
-    return righto.apply(null, [resolveIterator(fn)].concat(args));
-};
+righto.iterate = createIterator;
 
 righto.value = function(){
     var args = arguments;
