@@ -133,7 +133,7 @@ function createIterator(fn){
 
         var generator = fn.apply(null, args);
 
-        function run(done){
+        function run(){
             if(errored){
                 return;
             }
@@ -142,30 +142,24 @@ function createIterator(fn){
                 if(errored){
                     return;
                 }
-                return righto.from(next.value)(done);
+                return righto.from(next.value)(callback);
             }
             if(isResolvable(next.value)){
                 righto.sync(function(value){
                     lastValue = value;
-                    run(done);
+                    run();
                 }, next.value)(function(error){
                     if(error){
-                        done(error);
+                        callback(error);
                     }
                 });
                 return;
             }
             lastValue = next.value;
-            run(done);
+            run();
         }
 
-        var task = righto(run);
-
-        if(callback){
-            task(callback);
-        }
-
-        return task;
+        run();
     };
 }
 

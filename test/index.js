@@ -912,9 +912,7 @@ test('generator support', function(t){
         return x + y;
     });
 
-    var result = generated()
-
-    result(function(error, result){
+    generated(function(error, result){
         t.equal(result, 'xy');
     });
 });
@@ -938,9 +936,7 @@ test('generator support errors', function(t){
         return x + y;
     });
 
-    var result = generated()
-
-    result(function(error, result){
+    generated(function(error, result){
         t.equal(error, 'error');
     });
 });
