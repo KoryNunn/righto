@@ -211,39 +211,6 @@ function addTracing(resolve, fn, args){
     };
 }
 
-function taskComplete(error){
-    var done = this[0],
-        callee = this[1],
-        context = completeContexts.get(callee);
-
-    if(!context){
-        return defer(taskComplete.bind.apply(taskComplete, [this].concat(Array.from(arguments))))
-    }
-
-    if(error && righto._debug){
-        context.resolve._error = error;
-    }
-
-    var results = arguments;
-
-    done(results);
-
-    var callbacks = [context.callbacks];
-
-    for(var i = 0; i < callbacks.length; i++){
-        for(var j = 0; j < callbacks[i].length; j++){
-            var nextCallback = callbacks[i][j];
-            var callbackContext = completeContexts.get(nextCallback);
-
-            if(callbackContext){
-                callbacks.push(callbackContext.callbacks)
-            } else  {
-                nextCallback.apply(null, results)
-            }
-        }
-    }
-}
-
 function errorOut(error, callback){
     if(error && righto._debug){
         if(righto._autotraceOnError || this.resolve._traceOnError){
