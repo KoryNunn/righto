@@ -15,6 +15,7 @@ function catchOnce(callback){
             callback(error);
         };
     }
+
 }
 var windowError = typeof window !== 'undefined' && 'Script error.';
 
@@ -250,6 +251,28 @@ test('multiple ignored deps with after', function(t){
     getFoo(function(error, result){
         t.notOk(error, 'no error');
         t.equal(result, 'dooby', 'Got correct result');
+    });
+});
+
+test('promise passed to after', function(t){
+    t.plan(2);
+
+    var promiseRan;
+
+    var somePromise = new Promise(function(resolve, reject){
+            asyncify(function(){
+                promiseRan = true
+                resolve('foo');
+            });
+        });
+
+    var bar = righto(function(done){
+        done(null, 'bar');
+    }, righto.after(somePromise));
+
+    bar(function(error, bar){
+        t.equal(bar, 'bar');
+        t.ok(promiseRan);
     });
 });
 
@@ -595,7 +618,11 @@ test('errors don\'t get gobbled', function(t){
       t.equal(error, windowError || "BOOM");
     });
 
-    stuff();
+    try {
+        stuff();
+    } catch(error){
+      t.equal(error, windowError || "BOOM");
+    }
 });
 
 test('surely errors', function(t){
@@ -1158,7 +1185,11 @@ test('sync errors throw', function(t){
       t.equal(error, windowError || "BORKED");
     });
 
-    stuff();
+    try {
+        stuff();
+    } catch(error){
+      t.equal(error, windowError || "BORKED");
+    }
 
 });
 
@@ -1501,6 +1532,44 @@ test('righto.fail resolvable', function(t){
     falure(function(error){
         t.equal(error, 'reasons');
     });
+});
+
+test('righto is thennable', async function(t){
+    t.plan(1);
+
+    var someRighto = righto.from(1);
+
+    var result = await someRighto;
+
+    t.equal(result, 1, 'Righto resolved via then');
+});
+
+test('awaited righto throws', async function(t){
+    t.plan(1);
+
+    try {
+        var someRighto = righto.fail('the error');
+
+        var result = await someRighto;
+    } catch(error) {
+        t.equal(error, 'the error', 'failing righto with await throws error');
+    }
+});
+
+test('righto finally', async function(t){
+    t.plan(2);
+
+    var someRighto = righto.from(1);
+
+    someRighto.finally(function(){
+        t.pass('righto.finally ran on success');
+    })
+
+    var someFailingRighto = righto.fail('the error');
+
+    someFailingRighto.finally(function(){
+        t.pass('righto.finally ran on rejection');
+    })
 });
 
 test('righto prerun return', function(t){
