@@ -62,39 +62,6 @@ test('dependencies', function(t){
 
 });
 
-test('unsupported ignored deps', function(t){
-    t.plan(2);
-
-    function bar(callback){
-        callback(null, 1);
-    }
-
-    function foo(incorrectValue, callback){
-            callback();
-    }
-
-    righto._debug = true;
-    righto._warnOnUnsupported = true;
-
-    var getBar = righto(bar);
-
-    var getFoo = righto(foo, [getBar]);
-
-    consoleWatch(function(getResults){
-        getFoo(function(error, result){
-
-            var trace = getResults().warn[0];
-
-            t.equal(trace.split(/\n/g).length, 2);
-            t.ok(~trace.indexOf('Possible unsupported take/ignore syntax detected'));
-
-            righto._debug = false;
-            righto._warnOnUnsupported = false;
-        });
-    });
-
-});
-
 test('ignored deps with take', function(t){
     t.plan(2);
 
@@ -1028,18 +995,6 @@ test('generator support errors 2', function(t){
 test('generator support with args', function(t){
     t.plan(1);
 
-    var foo = righto(function(callback){
-        asyncify(function(){
-            callback(null, 'foo');
-        });
-    });
-
-    var bar = righto(function(callback){
-        asyncify(function(){
-            callback(null, 'bar');
-        });
-    });
-
     function* doThings(foo, bar){
         var x = yield righto(function(done){
             asyncify(function(){
@@ -1056,7 +1011,7 @@ test('generator support with args', function(t){
         return x + y;
     }
 
-    var thingsDone = righto.iterate(doThings, foo, bar);
+    var thingsDone = righto.iterate(doThings, 'foo', 'bar');
 
     thingsDone(function(error, result){
         t.equal(result, 'foobar');
@@ -1087,38 +1042,10 @@ test('generators that yield promises :/', function(t){
     });
 });
 
-test('generators with passed errors', function(t){
-    t.plan(1);
-
-    var generated = righto.iterate(function*(reject){
-        var x = yield righto(function(done){
-            asyncify(function(){
-                done(null, 'x');
-            });
-        });
-
-        if(x === 'x'){
-            return reject('foo');
-        }
-
-        var y = yield righto(function(done){
-            asyncify(function(){
-                done(null, 'y');
-            });
-        });
-
-        return x + y;
-    });
-
-    generated(function(error, result){
-        t.equal(error, 'foo');
-    });
-});
-
 test('generators with surely errors', function(t){
     t.plan(3);
 
-    var generated = righto.iterate(function*(reject){
+    var generated = righto.iterate(function*(){
         var [xError, x] = yield righto.surely(function(done){
             asyncify(function(){
                 done(true);
@@ -1129,7 +1056,7 @@ test('generators with surely errors', function(t){
         t.notOk(x);
 
         if(xError){
-            return reject('xError');
+            return righto.fail('xError');
         }
 
         var [yError, y] = yield righto.surely(function(done){
@@ -1143,6 +1070,30 @@ test('generators with surely errors', function(t){
 
     generated(function(error, result){
         t.equal(error, 'xError');
+    });
+});
+
+test('generators return eventual', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(){
+        return righto.from(1)
+    });
+
+    generated(function(error, result){
+        t.equal(result, 1);
+    });
+});
+
+test('iterate can take arguments after construction', function(t){
+    t.plan(1);
+
+    var generated = righto.iterate(function*(foo){
+        return foo
+    });
+
+    generated(1, function(error, result){
+        t.equal(result, 1);
     });
 });
 
