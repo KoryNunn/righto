@@ -20,6 +20,8 @@ function isTake(x){
 
 var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
+var taskHandlers = new WeakMap();
+
 function getCallLine(stack){
     var index = 0,
         lines = stack.split('\n');
@@ -50,7 +52,7 @@ function resolveDependency(task, done){
 
     function take(targetTask){
         var keys = slice(arguments, 1);
-        return targetTask(function(error){
+        return righto.from(targetTask)(function(error){
             var args = slice(arguments, 1);
             done(error, keys.map(function(key){
                 return args[key];
@@ -217,8 +219,12 @@ function addTracing(resolve, fn, args){
 
 function taskComplete(error){
     var done = this[0],
-        context = this[1],
-        callbacks = context.callbacks;
+        callee = this[1],
+        context = completeContexts.get(callee);
+
+    if(!context){
+        return defer(taskComplete.bind.apply(taskComplete, [this].concat(Array.from(arguments))))
+    }
 
     if(error && righto._debug){
         context.resolve._error = error;
@@ -228,8 +234,19 @@ function taskComplete(error){
 
     done(results);
 
+    var callbacks = [context.callbacks];
+
     for(var i = 0; i < callbacks.length; i++){
-        defer(callbacks[i].apply.bind(callbacks[i], null, results));
+        for(var j = 0; j < callbacks[i].length; j++){
+            var nextCallback = callbacks[i][j];
+            var callbackContext = completeContexts.get(nextCallback);
+
+            if(callbackContext){
+                callbacks.push(callbackContext.callbacks)
+            } else  {
+                nextCallback.apply(null, results)
+            }
+        }
     }
 }
 
@@ -267,22 +284,53 @@ function resolveWithDependencies(done, error, argResults){
     }
 
     var args = [].concat.apply([], argResults),
-        complete = taskComplete.bind([done, context]);
+        async;
+
+    function complete(error){
+        if(!async){
+            return defer(complete.bind.apply(complete, [null].concat(Array.from(arguments))))
+        }
+
+        if(error && righto._debug){
+            context.resolve._error = error;
+        }
+
+        var results = arguments;
+
+        done(results);
+
+        var callbacks = [context.callbacks];
+
+        for(var i = 0; i < callbacks.length; i++){
+            for(var j = 0; j < callbacks[i].length; j++){
+                var nextCallback = callbacks[i][j];
+
+                if(taskHandlers.has(nextCallback)){
+                    callbacks.push(taskHandlers.get(nextCallback))
+                } else  {
+                    nextCallback.apply(null, results)
+                }
+            }
+        }
+    }
 
     if(righto._debug){
-        return debugResolve(context, args, complete);
+        debugResolve(context, args, complete);
+    } else {
+        // Slight perf bump by avoiding apply for simple cases.
+        switch(args.length){
+            case 0: context.fn(complete); break;
+            case 1: context.fn(args[0], complete); break;
+            case 2: context.fn(args[0], args[1], complete); break;
+            case 3: context.fn(args[0], args[1], args[2], complete); break;
+            default:
+                args.push(complete);
+                context.fn.apply(null, args);
+        }
     }
 
-    // Slight perf bump by avoiding apply for simple cases.
-    switch(args.length){
-        case 0: context.fn(complete); break;
-        case 1: context.fn(args[0], complete); break;
-        case 2: context.fn(args[0], args[1], complete); break;
-        case 3: context.fn(args[0], args[1], args[2], complete); break;
-        default:
-            args.push(complete);
-            context.fn.apply(null, args);
-    }
+    taskHandlers.set(complete, context.callbacks);
+    async = true;
 }
 
 function resolveDependencies(args, complete, resolveDependency){
@@ -342,20 +390,47 @@ function resolver(complete){
         return;
     }
 
-    var resolved = resolveWithDependencies.bind(context, function(resolvedResults){
-            if(righto._debug){
-                if(righto._autotrace || context.resolve._traceOnExecute){
-                    console.log('Executing ' + context.fn.name + ' ' + context.resolve._trace());
-                }
-            }
+    var async;
 
-            context.results = resolvedResults;
-        });
+    function dependenciesResolved(resolvedResults){
+        if(righto._debug){
+            if(righto._autotrace || context.resolve._traceOnExecute){
+                console.log('Executing ' + context.fn.name + ' ' + context.resolve._trace());
+            }
+        }
+
+        context.results = resolvedResults;
+    }
+
+    var resolved = resolveWithDependencies.bind(context, dependenciesResolved);
 
     defer(resolveDependencies.bind(null, context.args, resolved, resolveDependency.bind(context.resolve)));
 
     return context.resolve;
 };
+
+function thenMethod(handleSuccess, handleError){
+    if(handleError){
+        return this.then(handleSuccess).catch(handleError);
+    }
+
+    return this.get(handleSuccess)();
+}
+
+function catchMethod(handleError){
+    return righto.handle(this, function(error, done){
+        righto.from(handleError(error))(done);
+    })();
+}
+
+function finallyMethod(handleFinally){
+    return this
+    .then(() => {
+        handleFinally();
+    }, () => {
+        handleFinally();
+    });
+}
 
 function righto(){
     var args = slice(arguments),
@@ -377,6 +452,9 @@ function righto(){
         },
         resolve = resolver.bind(resolverContext);
     resolve.get = get.bind(resolve);
+    resolve.then = thenMethod.bind(resolve);
+    resolve.catch = catchMethod.bind(resolve);
+    resolve.finally = finallyMethod.bind(resolve);
     resolverContext.resolve = resolve;
     resolve.resolve = resolve;
 
@@ -551,13 +629,14 @@ righto.surely = function(task){
 
 righto.handle = function(task, handler){
     return righto(function(handler, done){
-        task(function(error){
+        function complete(error){
             if(!error){
                 return task(done);
             }
 
             handler(error, done);
-        });
+        }
+        task(complete);
     }, handler);
 };
 
