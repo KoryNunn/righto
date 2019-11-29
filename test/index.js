@@ -433,7 +433,6 @@ test('righto.reduce fail part way', function(t){
     });
 
     result(function(error, finalResult){
-        console.log(error, finalResult)
         t.equal(error, 'error');
     });
 });
