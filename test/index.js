@@ -424,6 +424,20 @@ test('righto.reduce no items', function(t){
     });
 });
 
+test('righto.reduce fail part way', function(t){
+    t.plan(3);
+
+    var result = righto.reduce([1, 2, 3], function(result, next){
+        t.pass();
+        return result === 2 ? righto.fail('error') : next;
+    });
+
+    result(function(error, finalResult){
+        console.log(error, finalResult)
+        t.equal(error, 'error');
+    });
+});
+
 test('righto().get(key)', function(t){
     t.plan(4);
 
