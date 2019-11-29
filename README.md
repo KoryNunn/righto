@@ -5,6 +5,8 @@
 </p>
 <hr />
 
+https://travis-ci.org/KoryNunn/righto.svg?branch=master
+
 An Eventuals implementation that:
  - Lets you use synchronous functions, err-backs (normal callback style), promises, iterators (yield), whatever you like.
  - Are lazily evaluated.
