@@ -588,7 +588,7 @@ righto.surely = function(task){
     }
 
     return righto(function(done){
-        task(function(){
+        righto.from(task)(function(){
             done(null, slice(arguments));
         });
     });
@@ -598,12 +598,12 @@ righto.handle = function(task, handler){
     return righto(function(handler, done){
         function complete(error){
             if(!error){
-                return task(done);
+                return done.apply(null, arguments);
             }
 
             handler(error, done);
         }
-        task(complete);
+        righto.from(task)(complete);
     }, handler);
 };
 

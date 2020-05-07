@@ -690,6 +690,29 @@ test('surely multiple results', function(t){
     }, errorOrX, errorOrY)();
 });
 
+test('surely promises', function(t){
+    t.plan(6);
+
+    var errorOrA = righto.surely(new Promise(function(resolve, reject){
+        resolve('a')
+    }));
+
+    var errorOrB = righto.surely(new Promise(function(resolve, reject){
+        reject('error')
+    }));
+
+    righto(function([aError, a], [bError, b]){
+
+        t.ok(a);
+        t.notOk(aError);
+        t.ok(bError);
+        t.notOk(b);
+        t.equal(a, 'a');
+        t.equal(bError, 'error');
+
+    }, errorOrA, errorOrB)();
+});
+
 test('0 results resolve 1 argument as a dep', function(t){
     t.plan(2);
 
@@ -1340,6 +1363,23 @@ test('handle', function(t){
     y(function(error, result){
         t.equal(result, 0);
     });
+});
+
+test('handle promise', function(t){
+    t.plan(1);
+
+    var promise = new Promise(function(resolve, reject) {
+        reject('my error')
+    })
+
+    function handleError(error, done){
+        t.equal(error, 'my error', 'Handled expected error')
+        done()
+    }
+
+    var handled = righto.handle(promise, handleError);
+
+    handled();
 });
 
 test('generators with handle success', function(t){
