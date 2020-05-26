@@ -267,17 +267,15 @@ function resolveWithDependencies(done, error, argResults){
 
         done(results);
 
-        var callbacks = [context.callbacks];
+        var callbacks = context.callbacks;
 
-        for(var i = 0; i < callbacks.length; i++){
-            for(var j = 0; j < callbacks[i].length; j++){
-                var nextCallback = callbacks[i][j];
+        while(callbacks.length){
+            var nextCallback = callbacks.shift();
 
-                if(taskHandlers.has(nextCallback)){
-                    callbacks.push(taskHandlers.get(nextCallback))
-                } else  {
-                    nextCallback.apply(null, results)
-                }
+            if(taskHandlers.has(nextCallback)){
+                callbacks.push.apply(callbacks, taskHandlers.get(nextCallback))
+            } else  {
+                nextCallback.apply(null, results)
             }
         }
     }
@@ -353,13 +351,14 @@ function resolver(complete){
     }
 
     if(context.results){
-        return complete.apply(null, context.results);
+        complete.apply(null, context.results);
+        return context.resolve;
     }
 
     context.callbacks.push(complete);
 
     if(context.started++){
-        return;
+        return context.resolve;
     }
 
     var async;

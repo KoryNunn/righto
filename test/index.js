@@ -1337,6 +1337,87 @@ test('get returning a righto', function(t){
     });
 });
 
+test('calling a righto returns the righto', function(t){
+    t.plan(1);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    var thingos = righto(getThingos)()(function(error, result){
+        t.deepEqual(result, [1, 2, 3, 4, 5])
+    });
+});
+
+test('calling a righto N times returns the righto', function(t){
+    t.plan(1);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    var thingos = righto(getThingos)
+
+    for(var i = 0; i < 100; i++){
+        thingos = thingos()
+    }
+
+    thingos(function(error, result){
+        t.deepEqual(result, [1, 2, 3, 4, 5])
+    });
+});
+
+test('calling a righto after complete returns the righto', function(t){
+    t.plan(1);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    var thingos = righto(getThingos)
+
+    thingos()()(function(error, result){
+        thingos()()(function(error, result){
+            t.deepEqual(result, [1, 2, 3, 4, 5])
+        });
+    });
+});
+
+test('calling a righto after complete but before first handlers called succeeds', function(t){
+    t.plan(4);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    var thingos = righto(getThingos)
+
+    thingos(function(error, result){
+        t.deepEqual(result, [1, 2, 3, 4, 5])
+        thingos(function(error, result){
+            t.deepEqual(result, [1, 2, 3, 4, 5])
+        });
+
+        setTimeout(function(){
+            thingos(function(error, result){
+                t.deepEqual(result, [1, 2, 3, 4, 5])
+            });
+        }, 10);
+    });
+
+    thingos(function(error, result){
+        t.deepEqual(result, [1, 2, 3, 4, 5])
+    });
+});
+
 test('handle', function(t){
     t.plan(1);
 
