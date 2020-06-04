@@ -20,8 +20,6 @@ function isTake(x){
 
 var slice = Array.prototype.slice.call.bind(Array.prototype.slice);
 
-var taskHandlers = new WeakMap();
-
 function getCallLine(stack){
     var index = 0,
         lines = stack.split('\n');
@@ -251,14 +249,9 @@ function resolveWithDependencies(done, error, argResults){
 
             results.push(next);
             return results;
-        }, []),
-        async;
+        }, []);
 
     function complete(error){
-        if(!async){
-            return defer(complete.bind.apply(complete, [null].concat(Array.from(arguments))))
-        }
-
         if(error && righto._debug){
             context.resolve._error = error;
         }
@@ -272,11 +265,7 @@ function resolveWithDependencies(done, error, argResults){
         while(callbacks.length){
             var nextCallback = callbacks.shift();
 
-            if(taskHandlers.has(nextCallback)){
-                callbacks.push.apply(callbacks, taskHandlers.get(nextCallback))
-            } else  {
-                nextCallback.apply(null, results)
-            }
+            nextCallback.apply(null, results)
         }
     }
 
@@ -294,9 +283,6 @@ function resolveWithDependencies(done, error, argResults){
                 context.fn.apply(null, args);
         }
     }
-
-    taskHandlers.set(complete, context.callbacks);
-    async = true;
 }
 
 function resolveDependencies(args, complete, resolveDependency){
@@ -355,7 +341,7 @@ function resolver(complete){
         return context.resolve;
     }
 
-    context.callbacks.push(complete);
+    context.callbacks.push(defer.bind(null, complete));
 
     if(context.started++){
         return context.resolve;

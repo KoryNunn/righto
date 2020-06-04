@@ -1418,6 +1418,29 @@ test('calling a righto after complete but before first handlers called succeeds'
     });
 });
 
+test('get after time elapsed', function(t){
+    t.plan(2);
+
+    function getThingos(callback){
+        asyncify(function(){
+            callback(null, [1, 2, 3, 4, 5]);
+        });
+    };
+
+    var thingos = righto(getThingos).get(x => x)
+
+    thingos(function(){
+        t.pass('Standard callback called')
+    })
+
+    setTimeout(function(){
+        thingos.get(x => x)(function(){
+            t.pass('delayed get callback called')
+        })
+    }, 10)
+
+});
+
 test('handle', function(t){
     t.plan(1);
 
