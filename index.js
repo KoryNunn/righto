@@ -1,6 +1,8 @@
 var abbott = require('abbott');
+require('setimmediate');
 
-var defer = global.process && global.process.nextTick || global.setImmediate || global.setTimeout;
+var deferCallbacks = [];
+var defer = global.process && global.process.nextTick || global.setImmediate;
 
 function isRighto(x){
     return typeof x === 'function' && (x.__resolve__ === x || x.resolve === x);
@@ -341,7 +343,9 @@ function resolver(complete){
         return context.resolve;
     }
 
-    context.callbacks.push(defer.bind(null, complete));
+    context.callbacks.push(function(){
+        defer(() => complete.apply(null, arguments))
+    });
 
     if(context.started++){
         return context.resolve;
